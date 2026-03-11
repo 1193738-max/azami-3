@@ -3,6 +3,7 @@ import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/data/products";
+import { toast } from "sonner";
 
 const SideCart = () => {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalItems, subtotal } = useCart();
@@ -10,21 +11,26 @@ const SideCart = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleCheckout = async () => {
-    // 1. Check if we have variant IDs (means we are on real Shopify)
-    const hasShopifyVariants = items.some(item => item.variantId);
+    // 1. Check if we have variant IDs (means we are on real Shopify and mapping worked)
+    const itemsWithVariants = items.filter(item => item.variantId);
     
-    if (hasShopifyVariants) {
+    // Check if we are physically on a Shopify domain
+    const isShopifyDomain = window.location.hostname.includes('myshopify.com') || window.location.hostname.includes('azami');
+
+    if (itemsWithVariants.length > 0 && isShopifyDomain) {
       setIsSyncing(true);
       try {
+        console.log("🛒 Iniciando checkout Shopify para os itens:", itemsWithVariants);
+        
         // Clear existing Shopify cart first to avoid mixups
         await fetch('/cart/clear.js', { method: 'POST' });
 
         // Add items to Shopify cart
-        await fetch('/cart/add.js', {
+        const cartAddRes = await fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            items: items.map(item => ({
+            items: itemsWithVariants.map(item => ({
               id: item.variantId,
               quantity: item.quantity,
               properties: {
@@ -35,17 +41,24 @@ const SideCart = () => {
           })
         });
 
+        if (!cartAddRes.ok) {
+          throw new Error("Erro ao adicionar ao carrinho da Shopify");
+        }
+
         // Redirect to Shopify checkout
+        console.log("✅ Itens adicionados. Redirecionando...");
         window.location.href = '/checkout';
         return;
       } catch (err) {
-        console.error("Shopify Checkout error, falling back to WhatsApp", err);
+        console.error("❌ Erro no checkout Shopify, tentando WhatsApp como fallback:", err);
+        toast.error("Ocorreu um erro no checkout nativo. Redirecionando para o WhatsApp...");
       } finally {
         setIsSyncing(false);
       }
     }
 
-    // 2. Fallback to WhatsApp if not on Shopify or no variant IDs
+    // 2. Fallback to WhatsApp if not on Shopify, mapping failed, or request failed
+    console.log("📱 Redirecionando para WhatsApp (ou fallback acionado)");
     const WHATSAPP_NUMBER = "5511918439062";
     const productLines = items
       .map(
@@ -131,8 +144,9 @@ const SideCart = () => {
                       />
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          <h3 className="font-display text-xs tracking-wide text-foreground">
+                          <h3 className="font-display text-xs tracking-wide text-foreground" style={{ opacity: item.variantId ? 1 : 0.6 }}>
                             {item.product.name}
+                            {!item.variantId && <span className="text-[8px] text-destructive ml-1">(Ajustando...)</span>}
                           </h3>
                           <p className="font-body text-[10px] text-muted-foreground mt-0.5">
                             Tam: {item.size}

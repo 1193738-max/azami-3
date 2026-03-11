@@ -29,10 +29,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const closeCart = useCallback(() => setIsOpen(false), []);
 
   const addItem = useCallback((product: Product, size: ProductSize) => {
-    // Find matching Shopify variant ID
-    const variant = product.variants?.find(v => 
-      v.option1 === size || v.option2 === size || v.title.includes(size)
-    );
+    // Find matching Shopify variant ID (more robust matching)
+    const normalizedSize = size.toLowerCase().trim();
+    const variant = product.variants?.find(v => {
+      const v1 = v.option1?.toLowerCase().trim();
+      const v2 = v.option2?.toLowerCase().trim();
+      const vt = v.title?.toLowerCase().trim();
+      return v1 === normalizedSize || v2 === normalizedSize || vt === normalizedSize || vt?.includes(normalizedSize);
+    });
+    
     const variantId = variant?.id;
 
     setItems((prev) => {

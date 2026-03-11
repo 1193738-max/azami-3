@@ -9,8 +9,13 @@
     {{ 'index.css' | asset_url | stylesheet_tag }}
     <script>
       window.ShopifyThemeSettings = {
-        logoUrl: "{{ settings.logo | img_url: 'master' }}",
-        shopName: "{{ shop.name }}"
+        {% if settings.logo %}
+        logoUrl: {{ settings.logo | image_url | json }},
+        {% else %}
+        logoUrl: null,
+        {% endif %}
+        shopName: {{ shop.name | json }},
+        fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
       };
     </script>
   </head>

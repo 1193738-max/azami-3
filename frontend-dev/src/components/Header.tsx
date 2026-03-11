@@ -59,17 +59,29 @@ const Header = () => {
           </nav>
 
           {/* Logo — centered, black on white */}
+          {/* Logo — centered, black on white */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img
-              src={(window as any)?.ShopifyThemeSettings?.logoUrl?.includes('no-image') ? azamiLogo : (window as any)?.ShopifyThemeSettings?.logoUrl || azamiLogo}
+              src={(() => {
+                const settings = (window as any)?.ShopifyThemeSettings || {};
+                let url = settings.logoUrl;
+                if (!url || typeof url !== 'string' || url.includes('no-image') || url.includes('empty.gif')) {
+                  url = settings.fallbackLogoUrl || azamiLogo;
+                }
+                return url;
+              })()}
               alt={ (window as any)?.ShopifyThemeSettings?.shopName || "AZAMI MODAS" }
               className="h-14 md:h-20 w-auto object-contain rounded-sm"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (!target.dataset.failed) {
                   target.dataset.failed = "true";
-                  // Em Shopify, assets compilados pelo Vite perdem os caminhos relativos ao CDN caso não injetados via Liquid. O fallback puro evitará loop.
-                  target.style.display = 'none'; // se falhar tudo, esconde imagem quebrada em vez de loop infinito.
+                  const fallback = ((window as any)?.ShopifyThemeSettings?.fallbackLogoUrl || azamiLogo);
+                  if (target.src !== fallback && !target.src.includes(fallback)) {
+                      target.src = fallback;
+                  } else {
+                      target.style.display = 'none'; // se até o fallback falhar
+                  }
                 }
               }}
             />

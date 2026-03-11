@@ -7,6 +7,12 @@
     {{ content_for_header }}
     
     {{ 'index.css' | asset_url | stylesheet_tag }}
+    <script>
+      window.ShopifyThemeSettings = {
+        logoUrl: "{{ settings.logo | img_url: 'master' }}",
+        shopName: "{{ shop.name }}"
+      };
+    </script>
   </head>
   <body>
     <!-- 

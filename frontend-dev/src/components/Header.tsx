@@ -61,9 +61,17 @@ const Header = () => {
           {/* Logo — centered, black on white */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img
-              src={azamiLogo}
-              alt="AZAMI MODAS"
+              src={(window as any)?.ShopifyThemeSettings?.logoUrl?.includes('no-image') ? azamiLogo : (window as any)?.ShopifyThemeSettings?.logoUrl || azamiLogo}
+              alt={ (window as any)?.ShopifyThemeSettings?.shopName || "AZAMI MODAS" }
               className="h-14 md:h-20 w-auto object-contain rounded-sm"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.dataset.failed) {
+                  target.dataset.failed = "true";
+                  // Em Shopify, assets compilados pelo Vite perdem os caminhos relativos ao CDN caso não injetados via Liquid. O fallback puro evitará loop.
+                  target.style.display = 'none'; // se falhar tudo, esconde imagem quebrada em vez de loop infinito.
+                }
+              }}
             />
           </Link>
 

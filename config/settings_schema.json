@@ -6,5 +6,16 @@
     "theme_version": "1.0.0",
     "theme_documentation_url": "https://help.shopify.com/",
     "theme_support_url": "https://help.shopify.com/"
+  },
+  {
+    "name": "General Settings",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo image",
+        "info": "Upload your brand logo."
+      }
+    ]
   }
 ]

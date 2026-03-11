@@ -51,6 +51,26 @@
         "type": "image_picker",
         "id": "insta_img_2",
         "label": "Instagram Foto 2"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_3",
+        "label": "Instagram Foto 3"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_4",
+        "label": "Instagram Foto 4"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_5",
+        "label": "Instagram Foto 5"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_6",
+        "label": "Instagram Foto 6"
       }
     ]
   }

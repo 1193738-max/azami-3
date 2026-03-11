@@ -12,10 +12,10 @@ const InstagramFeed = () => {
   const images = [
     settings.insta1 && typeof settings.insta1 === 'string' && !settings.insta1.includes('no-image') ? settings.insta1 : model01,
     settings.insta2 && typeof settings.insta2 === 'string' && !settings.insta2.includes('no-image') ? settings.insta2 : model03,
-    model05,
-    model09,
-    model07,
-    model02
+    settings.insta3 && typeof settings.insta3 === 'string' && !settings.insta3.includes('no-image') ? settings.insta3 : model05,
+    settings.insta4 && typeof settings.insta4 === 'string' && !settings.insta4.includes('no-image') ? settings.insta4 : model09,
+    settings.insta5 && typeof settings.insta5 === 'string' && !settings.insta5.includes('no-image') ? settings.insta5 : model07,
+    settings.insta6 && typeof settings.insta6 === 'string' && !settings.insta6.includes('no-image') ? settings.insta6 : model02
   ];
 
   return (

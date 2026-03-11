@@ -45,6 +45,30 @@
         insta2: null,
         {% endif %}
 
+        {% if settings.insta_img_3 %}
+        insta3: {{ settings.insta_img_3 | image_url | json }},
+        {% else %}
+        insta3: null,
+        {% endif %}
+
+        {% if settings.insta_img_4 %}
+        insta4: {{ settings.insta_img_4 | image_url | json }},
+        {% else %}
+        insta4: null,
+        {% endif %}
+
+        {% if settings.insta_img_5 %}
+        insta5: {{ settings.insta_img_5 | image_url | json }},
+        {% else %}
+        insta5: null,
+        {% endif %}
+
+        {% if settings.insta_img_6 %}
+        insta6: {{ settings.insta_img_6 | image_url | json }},
+        {% else %}
+        insta6: null,
+        {% endif %}
+
         shopName: {{ shop.name | json }},
         fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
       };

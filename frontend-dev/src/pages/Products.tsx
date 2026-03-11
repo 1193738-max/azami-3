@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
-import { products } from "@/data/products";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import ProductCard from "@/components/ProductCard";
 import {
   DesktopFilters,
@@ -22,6 +22,7 @@ const categoryLabels: Record<string, string> = {
 const Products = () => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get("cat") as FiltersState["category"];
+  const { data: products = [], isLoading } = useShopifyProducts();
 
   const [filters, setFilters] = useState<FiltersState>({
     ...defaultFilters,
@@ -63,7 +64,7 @@ const Products = () => {
     }
 
     return result;
-  }, [filters]);
+  }, [filters, products]);
 
   const title = filters.category
     ? categoryLabels[filters.category] || "Produtos"

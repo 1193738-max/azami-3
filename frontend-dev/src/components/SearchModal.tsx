@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { products } from "@/data/products";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import ProductCard from "./ProductCard";
 
 interface SearchModalProps {
@@ -11,7 +11,8 @@ interface SearchModalProps {
 
 const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState(products.slice(0, 4)); // Show recent or popular initially
+  const { data: products = [] } = useShopifyProducts();
+  const [results, setResults] = useState(products.slice(0, 4));
 
   useEffect(() => {
     if (query.trim() === "") {
@@ -20,7 +21,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
       const q = query.toLowerCase();
       setResults(products.filter(p => p.name.toLowerCase().includes(q) || p.category.some(c => c.includes(q))));
     }
-  }, [query]);
+  }, [query, products]);
 
   useEffect(() => {
     if (isOpen) {

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Heart, ShoppingBag, ArrowLeft, Plus, Minus, Truck, ArrowRight, ShieldCheck, CreditCard } from "lucide-react";
-import { products, formatPrice, ProductSize, ProductColor } from "@/data/products";
+import { formatPrice, ProductSize, ProductColor } from "@/data/products";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Header from "@/components/Header";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { data: products = [], isLoading } = useShopifyProducts();
   const product = products.find((p) => p.id === id);
 
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
@@ -32,6 +34,14 @@ const ProductDetails = () => {
       window.scrollTo(0, 0);
     }
   }, [product]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <p className="font-body text-sm text-foreground animate-pulse">Carregando produto...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

@@ -26,7 +26,7 @@ export interface Product {
   isBestSeller?: boolean;
 }
 
-export const products: Product[] = [
+export const fallbackProducts: Product[] = [
   {
     id: "1",
     name: "Corset Brilho Noturno",

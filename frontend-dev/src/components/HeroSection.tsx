@@ -8,7 +8,10 @@ const HeroSection = () => {
       <div className="relative flex-1">
         <div className="absolute inset-0">
           <img
-            src={model01}
+            src={(() => {
+              const url = (window as any)?.ShopifyThemeSettings?.heroImgUrl;
+              return url && typeof url === 'string' && !url.includes('no-image') ? url : model01;
+            })()}
             alt="AZAMI MODAS — A expressão máxima da sua autoconfiança"
             className="w-full h-full object-cover object-center animate-slow-zoom"
           />

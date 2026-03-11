@@ -14,6 +14,19 @@
         {% else %}
         logoUrl: null,
         {% endif %}
+        
+        {% if settings.hero_image %}
+        heroImgUrl: {{ settings.hero_image | image_url | json }},
+        {% else %}
+        heroImgUrl: null,
+        {% endif %}
+        
+        {% if settings.shape_image %}
+        shapeImgUrl: {{ settings.shape_image | image_url | json }},
+        {% else %}
+        shapeImgUrl: null,
+        {% endif %}
+
         shopName: {{ shop.name | json }},
         fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
       };

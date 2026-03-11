@@ -13,8 +13,20 @@
       {
         "type": "image_picker",
         "id": "logo",
-        "label": "Logo image",
+        "label": "Logo image (Cabeçalho)",
         "info": "Upload your brand logo."
+      },
+      {
+        "type": "image_picker",
+        "id": "hero_image",
+        "label": "Banner Inicial (Hero)",
+        "info": "Imagem principal da primeira dobra do site."
+      },
+      {
+        "type": "image_picker",
+        "id": "shape_image",
+        "label": "Imagem 'O Shape'",
+        "info": "Imagem para a secção escura 'O Shape que Esculpe'."
       }
     ]
   }

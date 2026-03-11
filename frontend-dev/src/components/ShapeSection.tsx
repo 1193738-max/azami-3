@@ -8,7 +8,14 @@ const ShapeSection = () => {
         {/* Image */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
           className="relative aspect-[4/5] md:aspect-auto overflow-hidden">
-          <img src={model01} alt="O Shape que esculpe" className="w-full h-full object-cover" />
+          <img 
+            src={(() => {
+              const url = (window as any)?.ShopifyThemeSettings?.shapeImgUrl;
+              return url && typeof url === 'string' && !url.includes('no-image') ? url : model01;
+            })()} 
+            alt="O Shape que esculpe" 
+            className="w-full h-full object-cover" 
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[hsl(0_0%_3%)] md:bg-gradient-to-r md:from-transparent md:to-[hsl(0_0%_3%)]" />
         </motion.div>
 

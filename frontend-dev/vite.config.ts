@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: path.resolve(__dirname, "../assets"),
     emptyOutDir: false,
+    assetsInlineLimit: 10000000, // 10MB para prevenir 404 no CDN Shopify
     rollupOptions: {
       input: path.resolve(__dirname, "src/main.tsx"),
       output: {

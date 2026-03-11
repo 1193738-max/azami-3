@@ -1,18 +1,20 @@
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import model02 from "@/assets/model-02.jpg";
-import model03 from "@/assets/model-03.jpg";
-import model04 from "@/assets/model-04.jpg";
-import model06 from "@/assets/model-06.jpg";
-
-const beachProducts = [
-  { name: "Vestido Crochet Sunset", price: "R$ 289,90", image: model03 },
-  { name: "Saída de Praia Riviera", price: "R$ 239,90", image: model06 },
-  { name: "Conjunto Crochê Dourado", price: "R$ 319,90", image: model02 },
-  { name: "Biquíni Shape Bronze", price: "R$ 199,90", image: model04 },
-];
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { formatPrice } from "@/data/products";
+import { Link } from "react-router-dom";
 
 const BeachCollection = () => {
+  const { data: allProducts = [], isLoading } = useShopifyProducts();
+  
+  const beachProducts = useMemo(() => {
+    return allProducts.filter(p => p.category.includes("beach") || p.category.includes("praia")).slice(0, 4);
+  }, [allProducts]);
+
+  if (isLoading && beachProducts.length === 0) return null;
+  if (!isLoading && beachProducts.length === 0) return null;
+
   return (
     <section id="beach" className="relative py-16 md:py-36 overflow-hidden bg-white">
       {/* Subtle wave texture */}
@@ -42,20 +44,24 @@ const BeachCollection = () => {
         {/* Product grid */}
         <div className="grid grid-cols-2 gap-2.5 md:gap-6">
           {beachProducts.map((product, i) => (
-            <motion.div key={product.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.5, delay: i * 0.1 }}
+            <motion.div key={product.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.5, delay: i * 0.1 }}
               className="group cursor-pointer">
               <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-muted">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Link to={`/produto/${product.id}`} className="block h-full w-full">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                </Link>
                 <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button className="w-7 h-7 md:w-8 md:h-8 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Favoritar"><Heart size={12} /></button>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400">
-                  <button className="w-full bg-primary text-primary-foreground font-body text-[9px] md:text-[10px] tracking-[0.15em] uppercase py-2.5 md:py-3 hover:bg-primary/90 transition-colors">Ver Disponibilidade</button>
+                  <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[9px] md:text-[10px] tracking-[0.15em] uppercase py-2.5 md:py-3 hover:bg-primary/90 transition-colors">Ver Disponibilidade</Link>
                 </div>
                 <div className="absolute inset-0 border border-border/20 group-hover:border-primary/20 transition-colors duration-300" />
               </div>
-              <h3 className="font-body text-[11px] md:text-sm text-foreground font-light leading-snug mb-1">{product.name}</h3>
-              <p className="font-body text-[10px] md:text-[11px] text-primary font-medium">{product.price}</p>
+              <Link to={`/produto/${product.id}`}>
+                <h3 className="font-body text-[11px] md:text-sm text-foreground font-light leading-snug mb-1">{product.name}</h3>
+                <p className="font-body text-[10px] md:text-[11px] text-primary font-medium">{formatPrice(product.price)}</p>
+              </Link>
             </motion.div>
           ))}
         </div>

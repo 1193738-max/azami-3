@@ -36,10 +36,15 @@ export interface Product {
     title: string;
     option1: string | null;
     option2: string | null;
+    option3?: string | null;
     price: string;
     available?: boolean;
     inventory_quantity?: number;
   }>;
+  optionMapping?: {
+    size: string | null;
+    color: string | null;
+  };
 }
 
 export const fallbackProducts: Product[] = [
@@ -196,3 +201,39 @@ export const fallbackProducts: Product[] = [
 
 export const formatPrice = (price: number) =>
   `R$ ${price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+// Color map for better UI representation
+export const colorMap: Record<string, string> = {
+  "preto": "#000000",
+  "black": "#000000",
+  "branco": "#FFFFFF",
+  "white": "#FFFFFF",
+  "off-white": "#F8F8F8",
+  "vermelho": "#EA0000",
+  "red": "#EA0000",
+  "azul": "#0000FF",
+  "blue": "#0000FF",
+  "champagne": "#E5E7EB",
+  "prata": "#C0C0C0",
+  "silver": "#C0C0C0",
+  "dourado": "#FFD700",
+  "gold": "#FFD700",
+  "rosa": "#FFC0CB",
+  "pink": "#FFC0CB",
+  "verde": "#008000",
+  "green": "#008000",
+  "amarelo": "#FFFF00",
+  "yellow": "#FFFF00",
+  "roxo": "#800080",
+  "purple": "#800080",
+  "marrom": "#A52A2A",
+  "brown": "#A52A2A",
+  "bege": "#F5F5DC",
+  "beige": "#F5F5DC",
+  "estampado": "url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')", // pattern placeholder
+};
+
+export const getColorValue = (colorName: string) => {
+  const norm = colorName.toLowerCase().trim();
+  return colorMap[norm] || "#000000"; // fallback black
+};

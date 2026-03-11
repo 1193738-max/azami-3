@@ -16,23 +16,17 @@ export const useShopifyProducts = () => {
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
-            // Extract all options from Shopify data
-            const sizeOption = p.options?.find((o: any) => 
+            // Map option names to their positions (1, 2, 3)
+            const sizeIdx = p.options?.findIndex((o: any) => 
               ['tamanho', 'size', 'tam', 'medida'].includes(o.name.toLowerCase())
             );
             
-            const colorOption = p.options?.find((o: any) => 
+            const colorIdx = p.options?.findIndex((o: any) => 
               ['cor', 'color', 'estampa', 'modelo'].includes(o.name.toLowerCase())
             );
 
-            // Dynamically collect ALL other options that aren't Size or Color
-            // This ensures we don't lose custom fields like "Tecido" or "Decote"
-            const otherOptions = p.options?.filter((o: any) => 
-              !['tamanho', 'size', 'tam', 'medida', 'cor', 'color', 'estampa', 'modelo'].includes(o.name.toLowerCase())
-            ) || [];
-
-            const sizes = sizeOption?.values || [];
-            const colors = colorOption?.values || [];
+            const sizes = sizeIdx !== -1 ? p.options[sizeIdx].values : [];
+            const colors = colorIdx !== -1 ? p.options[colorIdx].values : [];
             
             const tags = p.tags || [];
 
@@ -41,17 +35,19 @@ export const useShopifyProducts = () => {
               name: p.title,
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
-              details: [
-                ...tags,
-                ...otherOptions.map((o: any) => `${o.name}: ${o.values.join(', ')}`)
-              ],
+              details: tags,
               category: tags.map((t: string) => t.toLowerCase()),
               sizes: sizes,
               colors: colors,
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
               isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller")),
-              variants: p.variants || []
+              variants: p.variants || [],
+              // Add meta-info for variant matching
+              optionMapping: {
+                size: sizeIdx !== -1 ? `option${sizeIdx + 1}` : null,
+                color: colorIdx !== -1 ? `option${colorIdx + 1}` : null
+              }
             };
           });
         }

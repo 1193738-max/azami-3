@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Heart, ShoppingBag, ArrowLeft, Plus, Minus, Truck, ArrowRight, ShieldCheck, CreditCard } from "lucide-react";
-import { formatPrice, ProductSize, ProductColor } from "@/data/products";
+import { ChevronRight, Heart, ShoppingBag, ArrowLeft, Plus, Minus, Truck, ArrowRight, ShieldCheck, CreditCard, AlertCircle } from "lucide-react";
+import { formatPrice, ProductSize, ProductColor, getColorValue } from "@/data/products";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -55,13 +55,52 @@ const ProductDetails = () => {
   const wishlisted = isWishlisted(product.id);
   const relatedProducts = products.filter(p => p.id !== product.id && p.category.some(c => product.category.includes(c))).slice(0, 4);
 
+  // --- COMPREHENSIVE VARIANT MATCHING ---
+  const findVariant = (size: string | null, color: string | null) => {
+    if (!product.variants) return null;
+    
+    return product.variants.find(v => {
+      let isMatch = true;
+      
+      // Match size if applicable
+      if (size && product.optionMapping?.size) {
+        const vSize = (v as any)[product.optionMapping.size]?.toLowerCase().trim();
+        if (vSize !== size.toLowerCase().trim()) isMatch = false;
+      }
+      
+      // Match color if applicable
+      if (color && product.optionMapping?.color) {
+        const vColor = (v as any)[product.optionMapping.color]?.toLowerCase().trim();
+        if (vColor !== color.toLowerCase().trim()) isMatch = false;
+      }
+      
+      return isMatch;
+    });
+  };
+
+  const currentVariant = findVariant(selectedSize as any, selectedColor as any) || (product.variants && product.variants[0] ? product.variants[0] : null);
+  
+  // A variant is available if it exists AND its available property is NOT explicitly false
+  // AND either it has inventory_quantity > 0 OR Shopify is set to allow overselling (which often shows as negative or high quantity depending on setup)
+  const isAvailable = currentVariant ? (currentVariant.available !== false) : false;
+  const stockCount = currentVariant?.inventory_quantity;
+
   const handleAddToCart = () => {
-    if (!selectedSize && product.sizes.length > 0) {
+    if (product.sizes.length > 0 && !selectedSize) {
       toast.error("Por favor, selecione um tamanho");
       return;
     }
+    if (product.colors.length > 0 && !selectedColor) {
+      toast.error("Por favor, selecione uma cor");
+      return;
+    }
+    if (!isAvailable) {
+      toast.error("Esta combinação está esgotada no momento.");
+      return;
+    }
     for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedSize || "" as any);
+        // We pass variantId directly to help CartContext identify it faster
+      addItem(product, selectedSize || "" as any, selectedColor as any); 
     }
     toast.success(`${product.name} adicionado à sacola! ✨`);
     openCart();
@@ -103,6 +142,11 @@ const ProductDetails = () => {
                 >
                   <Heart size={20} fill={wishlisted ? "currentColor" : "none"} />
                 </button>
+                {!isAvailable && (
+                  <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
+                    <span className="bg-background/90 text-foreground px-6 py-3 font-body text-[10px] tracking-[0.3em] uppercase border border-border">Esgotado</span>
+                  </div>
+                )}
               </motion.div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -124,60 +168,91 @@ const ProductDetails = () => {
                 <span className="font-body text-[9px] tracking-[0.2em] uppercase text-primary mb-4 block">Best Seller Destaque</span>
               )}
               <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">{product.name}</h1>
-              <p className="font-display text-2xl text-foreground mb-8">{formatPrice(product.price)}</p>
+              <div className="flex items-center gap-4 mb-8">
+                <p className="font-display text-2xl text-foreground">{formatPrice(product.price)}</p>
+                {stockCount !== undefined && stockCount > 0 && stockCount <= 5 && (
+                  <span className="font-body text-[9px] text-destructive bg-destructive/5 px-2 py-1 border border-destructive/10 uppercase tracking-tighter">Apenas {stockCount} em estoque!</span>
+                )}
+                {!isAvailable && (
+                  <span className="font-body text-[10px] text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 border border-border">Sem Stock</span>
+                )}
+              </div>
 
               <div className="prose prose-sm font-body text-muted-foreground mb-10 leading-relaxed">
                 <p>{product.description}</p>
               </div>
 
               {/* Color Selection */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-body text-[10px] tracking-wider uppercase text-foreground">Cor: <span className="text-muted-foreground ml-1">{selectedColor}</span></span>
+              {product.colors.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-body text-[10px] tracking-wider uppercase text-foreground">Cor: <span className="text-muted-foreground ml-1">{selectedColor}</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    {product.colors.map(color => {
+                      const colorValue = getColorValue(color);
+                      const isPattern = colorValue.includes('url');
+                      
+                      return (
+                        <button
+                          key={color}
+                          onClick={() => setSelectedColor(color as any)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'ring-2 ring-primary ring-offset-2' : 'hover:scale-110'}`}
+                          aria-label={`Cor ${color}`}
+                        >
+                           <span 
+                            className={`w-full h-full rounded-full border border-border/20`} 
+                            style={{ 
+                                backgroundColor: isPattern ? 'transparent' : colorValue,
+                                backgroundImage: isPattern ? colorValue : 'none',
+                                backgroundSize: 'cover'
+                            }} 
+                           />
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  {product.colors.map(color => {
-                    let bgColor = "bg-black";
-                    if (color === "Branco") bgColor = "bg-white border border-gray-200";
-                    if (color === "Champagne") bgColor = "bg-[#E5E7EB]"; // Silver/Zinc tone
-                    if (color === "Estampado") bgColor = "bg-zinc-400"; // Monochrome pattern representation
-                    
-                    return (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'ring-2 ring-primary ring-offset-2' : 'hover:scale-110'}`}
-                        aria-label={`Cor ${color}`}
-                      >
-                         <span className={`w-full h-full rounded-full ${bgColor}`} />
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+              )}
 
               {/* Size Selection */}
-              <div className="mb-10">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-body text-[10px] tracking-wider uppercase text-foreground">Tamanho selecionado: <span className="text-muted-foreground ml-1">{selectedSize}</span></span>
-                  <Link to="/guia-de-medidas" className="font-body text-[9px] uppercase tracking-wider text-muted-foreground hover:text-foreground underline transition-colors">Guia de Medidas</Link>
+              {product.sizes.length > 0 && (
+                <div className="mb-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-body text-[10px] tracking-wider uppercase text-foreground">Tamanho selecionado: <span className="text-muted-foreground ml-1">{selectedSize}</span></span>
+                    <Link to="/guia-de-medidas" className="font-body text-[9px] uppercase tracking-wider text-muted-foreground hover:text-foreground underline transition-colors">Guia de Medidas</Link>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {product.sizes.map((size) => {
+                      // Check availability for this specific size COMBINED with current color
+                      const v = findVariant(size as any, selectedColor as any);
+                      const isSizeAvailable = v ? (v.available !== false) : false;
+
+                      return (
+                        <button
+                          key={size}
+                          disabled={!isSizeAvailable}
+                          onClick={() => setSelectedSize(size as any)}
+                          className={`py-3 font-body text-xs transition-colors border relative ${
+                            selectedSize === size
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : isSizeAvailable 
+                                ? "border-border text-foreground hover:border-foreground"
+                                : "border-border/40 text-muted-foreground/40 cursor-not-allowed overflow-hidden"
+                          }`}
+                        >
+                          {size}
+                          {!isSizeAvailable && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-[120%] h-[1px] bg-muted-foreground/30 rotate-[35deg]" />
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-3 font-body text-xs transition-colors border ${
-                        selectedSize === size
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border text-foreground hover:border-foreground"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -189,26 +264,21 @@ const ProductDetails = () => {
 
                 <div className="flex flex-col sm:flex-row flex-1 gap-3">
                   <button 
+                    disabled={!isAvailable}
                     onClick={handleAddToCart}
-                    className="flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-transparent text-foreground border border-foreground hover:bg-muted transition-all flex items-center justify-center gap-2"
+                    className={`flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-transparent text-foreground border border-foreground hover:bg-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     <ShoppingBag size={14} />
-                    Na Sacola
+                    {isAvailable ? 'Na Sacola' : 'Esgotado'}
                   </button>
                   <button 
+                    disabled={!isAvailable}
                     onClick={() => {
-                      if (!selectedSize && product.sizes.length > 0) {
-                        toast.error("Por favor, selecione um tamanho");
-                        return;
-                      }
-                      for (let i = 0; i < quantity; i++) {
-                        addItem(product, selectedSize || "" as any);
-                      }
-                      openCart();
+                        handleAddToCart();
                     }}
-                    className="flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center justify-center gap-2 mono-shine"
+                    className={`flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center justify-center gap-2 mono-shine disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    Comprar Agora
+                    {isAvailable ? 'Comprar Agora' : 'Indisponível'}
                   </button>
                 </div>
               </div>
@@ -225,7 +295,7 @@ const ProductDetails = () => {
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground sm:col-span-2">
                   <CreditCard size={18} className="text-primary" />
-                  <span className="font-body text-xs">Finalize com segurança no WhatsApp da marca</span>
+                  <span className="font-body text-xs">Pagamento Seguro & Checkout Nativo Shopify</span>
                 </div>
               </div>
 

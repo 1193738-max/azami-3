@@ -6,7 +6,7 @@ interface CartContextType {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (product: Product, size: ProductSize) => void;
+  addItem: (product: Product, size: ProductSize, color?: string) => void;
   removeItem: (productId: string, size: ProductSize) => void;
   updateQuantity: (productId: string, size: ProductSize, qty: number) => void;
   totalItems: number;
@@ -28,33 +28,41 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
 
-  const addItem = useCallback((product: Product, size: ProductSize) => {
-    console.log(`🛒 Adicionando ao carrinho: ${product.name} (Tamanho: ${size})`);
-
-    // Find matching Shopify variant ID (more robust matching)
-    const normalizedSize = size?.toLowerCase().trim();
-    
+  const addItem = useCallback((product: Product, size: ProductSize, color?: string) => {
+    // Advanced variant matching using optionMapping
     let variant = product.variants?.find(v => {
-      const v1 = v.option1?.toLowerCase().trim();
-      const v2 = v.option2?.toLowerCase().trim();
-      const v3 = (v as any).option3?.toLowerCase().trim();
-      const vt = v.title?.toLowerCase().trim();
+      let isMatch = true;
       
-      return v1 === normalizedSize || v2 === normalizedSize || v3 === normalizedSize || vt === normalizedSize || vt?.includes(normalizedSize);
+      if (size && product.optionMapping?.size) {
+        const vSize = (v as any)[product.optionMapping.size]?.toLowerCase().trim();
+        if (vSize !== size.toString().toLowerCase().trim()) isMatch = false;
+      }
+      
+      if (color && product.optionMapping?.color) {
+        const vColor = (v as any)[product.optionMapping.color]?.toLowerCase().trim();
+        if (vColor !== color.toLowerCase().trim()) isMatch = false;
+      }
+      
+      return isMatch;
     });
     
-    // If NO variant was found based on size, fallback to the very first variant
-    // This ensures we at least have a valid Shopify identifier for checkout
+    // Fallback to title/loose match if direct mapping fails
+    if (!variant) {
+      const normalizedSize = size?.toString().toLowerCase().trim();
+      variant = product.variants?.find(v => {
+        const v1 = v.option1?.toLowerCase().trim();
+        const v2 = v.option2?.toLowerCase().trim();
+        const vt = v.title?.toLowerCase().trim();
+        return v1 === normalizedSize || v2 === normalizedSize || vt?.includes(normalizedSize || "");
+      });
+    }
+
+    // Ultimate fallback to first variant
     if (!variant && product.variants && product.variants.length > 0) {
-      console.warn(`⚠️ Não foi possível encontrar variante exata para o tamanho "${size}" para o produto ${product.name}. Usando a primeira variante disponível como fallback.`);
       variant = product.variants[0];
     }
     
     const variantId = variant?.id;
-
-    if (!variantId) {
-      console.error(`❌ ERRO CRÍTICO: Não foi possível identificar o ID do produto ${product.name} da Shopify. O checkout pode falhar.`);
-    }
 
     setItems((prev) => {
       const existing = prev.find(

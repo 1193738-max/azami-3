@@ -81,7 +81,6 @@ const ProductDetails = () => {
   const currentVariant = findVariant(selectedSize as any, selectedColor as any) || (product.variants && product.variants[0] ? product.variants[0] : null);
   
   // A variant is available if it exists AND its available property is NOT explicitly false
-  // AND either it has inventory_quantity > 0 OR Shopify is set to allow overselling (which often shows as negative or high quantity depending on setup)
   const isAvailable = currentVariant ? (currentVariant.available !== false) : false;
   const stockCount = currentVariant?.inventory_quantity;
 
@@ -98,8 +97,14 @@ const ProductDetails = () => {
       toast.error("Esta combinação está esgotada no momento.");
       return;
     }
+    
+    // Check if adding this will exceed stock
+    if (quantity > (stockCount ?? 999)) {
+       toast.error(`Desculpe, só temos ${stockCount} un. em estoque.`);
+       return;
+    }
+
     for (let i = 0; i < quantity; i++) {
-        // We pass variantId directly to help CartContext identify it faster
       addItem(product, selectedSize || "" as any, selectedColor as any); 
     }
     toast.success(`${product.name} adicionado à sacola! ✨`);
@@ -168,13 +173,24 @@ const ProductDetails = () => {
                 <span className="font-body text-[9px] tracking-[0.2em] uppercase text-primary mb-4 block">Best Seller Destaque</span>
               )}
               <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">{product.name}</h1>
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 mb-4">
                 <p className="font-display text-2xl text-foreground">{formatPrice(product.price)}</p>
-                {stockCount !== undefined && stockCount > 0 && stockCount <= 5 && (
-                  <span className="font-body text-[9px] text-destructive bg-destructive/5 px-2 py-1 border border-destructive/10 uppercase tracking-tighter">Apenas {stockCount} em estoque!</span>
-                )}
                 {!isAvailable && (
                   <span className="font-body text-[10px] text-muted-foreground uppercase tracking-widest bg-muted px-3 py-1 border border-border">Sem Stock</span>
+                )}
+              </div>
+
+              {/* Enhanced Stock Indicator */}
+              <div className="mb-8 flex items-center gap-2">
+                {isAvailable && stockCount !== undefined && stockCount !== null && (
+                   <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${stockCount > 5 ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
+                      <span className="font-body text-[10px] tracking-wider uppercase text-muted-foreground">
+                        {stockCount > 0 
+                          ? `${stockCount} unidades disponíveis em estoque` 
+                          : "Quantidade sob encomenda (Consulte disponibilidade)"}
+                      </span>
+                   </div>
                 )}
               </div>
 
@@ -259,7 +275,13 @@ const ProductDetails = () => {
                 <div className="flex items-center border border-border h-14 w-full sm:w-32">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Minus size={14} /></button>
                   <span className="flex-1 text-center font-body text-sm font-medium">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Plus size={14} /></button>
+                  <button onClick={() => {
+                     if (stockCount !== undefined && stockCount !== null && quantity >= stockCount) {
+                         toast.warning(`Limite de estoque atingido (${stockCount} un.)`);
+                         return;
+                     }
+                     setQuantity(quantity + 1);
+                  }} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Plus size={14} /></button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row flex-1 gap-3">

@@ -42,8 +42,15 @@ export const useShopifyProducts = () => {
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
               isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller")),
-              variants: p.variants || [],
-              // Add meta-info for variant matching
+              variants: p.variants.map((v: any) => ({
+                ...v,
+                // Ensure price is a string for consistency
+                price: v.price?.toString(),
+                // Inventory quantity is crucial
+                inventory_quantity: v.inventory_quantity ?? 0,
+                // Availability flag
+                available: v.available ?? (v.inventory_quantity > 0 || v.inventory_management === null)
+              })) || [],
               optionMapping: {
                 size: sizeIdx !== -1 ? `option${sizeIdx + 1}` : null,
                 color: colorIdx !== -1 ? `option${colorIdx + 1}` : null

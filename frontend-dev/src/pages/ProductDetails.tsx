@@ -56,12 +56,12 @@ const ProductDetails = () => {
   const relatedProducts = products.filter(p => p.id !== product.id && p.category.some(c => product.category.includes(c))).slice(0, 4);
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    if (!selectedSize && product.sizes.length > 0) {
       toast.error("Por favor, selecione um tamanho");
       return;
     }
     for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedSize);
+      addItem(product, selectedSize || "" as any);
     }
     toast.success(`${product.name} adicionado à sacola! ✨`);
     openCart();
@@ -197,12 +197,12 @@ const ProductDetails = () => {
                   </button>
                   <button 
                     onClick={() => {
-                      if (!selectedSize) {
+                      if (!selectedSize && product.sizes.length > 0) {
                         toast.error("Por favor, selecione um tamanho");
                         return;
                       }
                       for (let i = 0; i < quantity; i++) {
-                        addItem(product, selectedSize);
+                        addItem(product, selectedSize || "" as any);
                       }
                       openCart();
                     }}

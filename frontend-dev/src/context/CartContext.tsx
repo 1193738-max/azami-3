@@ -29,16 +29,32 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const closeCart = useCallback(() => setIsOpen(false), []);
 
   const addItem = useCallback((product: Product, size: ProductSize) => {
+    console.log(`🛒 Adicionando ao carrinho: ${product.name} (Tamanho: ${size})`);
+
     // Find matching Shopify variant ID (more robust matching)
-    const normalizedSize = size.toLowerCase().trim();
-    const variant = product.variants?.find(v => {
+    const normalizedSize = size?.toLowerCase().trim();
+    
+    let variant = product.variants?.find(v => {
       const v1 = v.option1?.toLowerCase().trim();
       const v2 = v.option2?.toLowerCase().trim();
+      const v3 = (v as any).option3?.toLowerCase().trim();
       const vt = v.title?.toLowerCase().trim();
-      return v1 === normalizedSize || v2 === normalizedSize || vt === normalizedSize || vt?.includes(normalizedSize);
+      
+      return v1 === normalizedSize || v2 === normalizedSize || v3 === normalizedSize || vt === normalizedSize || vt?.includes(normalizedSize);
     });
     
+    // If NO variant was found based on size, fallback to the very first variant
+    // This ensures we at least have a valid Shopify identifier for checkout
+    if (!variant && product.variants && product.variants.length > 0) {
+      console.warn(`⚠️ Não foi possível encontrar variante exata para o tamanho "${size}" para o produto ${product.name}. Usando a primeira variante disponível como fallback.`);
+      variant = product.variants[0];
+    }
+    
     const variantId = variant?.id;
+
+    if (!variantId) {
+      console.error(`❌ ERRO CRÍTICO: Não foi possível identificar o ID do produto ${product.name} da Shopify. O checkout pode falhar.`);
+    }
 
     setItems((prev) => {
       const existing = prev.find(

@@ -5,7 +5,6 @@ export const useShopifyProducts = () => {
   return useQuery({
     queryKey: ["shopify-products"],
     queryFn: async (): Promise<Product[]> => {
-      // Fetch directly from Shopify's AJAX API (only works when served inside Shopify Theme)
       try {
         const res = await fetch("/products.json?limit=250");
         if (!res.ok) {
@@ -15,21 +14,33 @@ export const useShopifyProducts = () => {
         
         if (data && Array.isArray(data.products) && data.products.length > 0) {
           return data.products.map((p: any) => {
-            // Shopify formats prices in cents or strings, usually variant option has price property
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
-            // Reconstruct sizes and colors from options
-            const sizes = p.options?.find((o: any) => o.name.toLowerCase() === 'tamanho' || o.name.toLowerCase() === 'size')?.values || ["P", "M", "G"];
-            const colors = p.options?.find((o: any) => o.name.toLowerCase() === 'cor' || o.name.toLowerCase() === 'color')?.values || ["Preto"];
+            // Extract real options from Shopify data
+            const sizeOption = p.options?.find((o: any) => 
+              o.name.toLowerCase() === 'tamanho' || 
+              o.name.toLowerCase() === 'size' ||
+              o.name.toLowerCase() === 'tam'
+            );
+            
+            const colorOption = p.options?.find((o: any) => 
+              o.name.toLowerCase() === 'cor' || 
+              o.name.toLowerCase() === 'color'
+            );
+
+            // Only use "P", "M", "G" as fallback if NO options exist at all
+            // If the product has variants and options, use those real values.
+            const sizes = sizeOption?.values || (p.options?.length > 0 ? [] : ["P", "M", "G"]);
+            const colors = colorOption?.values || (p.options?.length > 0 ? [] : ["Preto"]);
             
             const tags = p.tags || [];
 
             return {
-              id: p.handle, // For the React app, ID is the handle (slug)
+              id: p.handle,
               name: p.title,
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
-              details: tags, // Treat tags as details array
+              details: tags,
               category: tags.map((t: string) => t.toLowerCase()),
               sizes: sizes,
               colors: colors,
@@ -41,15 +52,12 @@ export const useShopifyProducts = () => {
           });
         }
         
-        // Se a loja não tem produtos ou não estamos no tema, usar os produtos locais
-        throw new Error("No products found, falling back to locals");
+        throw new Error("No products found");
       } catch (e) {
-        // Fallback for local development and errors
-        console.warn("Using fallback local products (Shopify fetch failed or is running locally).", e);
+        console.warn("Using fallback local products.", e);
         return fallbackProducts;
       }
     },
-    // keep products cached 
     staleTime: 5 * 60 * 1000, 
   });
 };

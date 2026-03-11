@@ -10,7 +10,14 @@ const BrandStory = () => {
           <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
             className="relative">
             <div className="aspect-[3/4] overflow-hidden">
-              <img src={model04} alt="AZAMI MODAS — Nossa história" className="w-full h-full object-cover" />
+              <img 
+                src={(() => {
+                  const url = (window as any)?.ShopifyThemeSettings?.brandStoryImgUrl;
+                  return url && typeof url === 'string' && !url.includes('no-image') ? url : model04;
+                })()} 
+                alt="AZAMI MODAS — Nossa história" 
+                className="w-full h-full object-cover" 
+              />
             </div>
             <div className="absolute -bottom-3 -right-3 md:-bottom-4 md:-right-4 w-full h-full border border-foreground/15 -z-10" />
           </motion.div>

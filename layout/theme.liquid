@@ -27,6 +27,24 @@
         shapeImgUrl: null,
         {% endif %}
 
+        {% if settings.brand_story_image %}
+        brandStoryImgUrl: {{ settings.brand_story_image | image_url | json }},
+        {% else %}
+        brandStoryImgUrl: null,
+        {% endif %}
+
+        {% if settings.insta_img_1 %}
+        insta1: {{ settings.insta_img_1 | image_url | json }},
+        {% else %}
+        insta1: null,
+        {% endif %}
+
+        {% if settings.insta_img_2 %}
+        insta2: {{ settings.insta_img_2 | image_url | json }},
+        {% else %}
+        insta2: null,
+        {% endif %}
+
         shopName: {{ shop.name | json }},
         fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
       };

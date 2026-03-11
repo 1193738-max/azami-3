@@ -7,9 +7,17 @@ import model05 from "@/assets/model-05.jpg";
 import model07 from "@/assets/model-07.jpg";
 import model09 from "@/assets/model-09.jpg";
 
-const images = [model01, model03, model05, model09, model07, model02];
-
 const InstagramFeed = () => {
+  const settings = (window as any)?.ShopifyThemeSettings || {};
+  const images = [
+    settings.insta1 && typeof settings.insta1 === 'string' && !settings.insta1.includes('no-image') ? settings.insta1 : model01,
+    settings.insta2 && typeof settings.insta2 === 'string' && !settings.insta2.includes('no-image') ? settings.insta2 : model03,
+    model05,
+    model09,
+    model07,
+    model02
+  ];
+
   return (
     <section className="py-20 md:py-28 bg-background">
       <div className="text-center mb-12 px-6">

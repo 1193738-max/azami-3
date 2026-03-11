@@ -27,6 +27,30 @@
         "id": "shape_image",
         "label": "Imagem 'O Shape'",
         "info": "Imagem para a secção escura 'O Shape que Esculpe'."
+      },
+      {
+        "type": "header",
+        "content": "A Marca (Sobre Nós)"
+      },
+      {
+        "type": "image_picker",
+        "id": "brand_story_image",
+        "label": "Foto da história da marca",
+        "info": "Imagem que aparece ao lado do texto da nossa essência."
+      },
+      {
+        "type": "header",
+        "content": "Rodapé e Instagram"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_1",
+        "label": "Instagram Foto 1"
+      },
+      {
+        "type": "image_picker",
+        "id": "insta_img_2",
+        "label": "Instagram Foto 2"
       }
     ]
   }

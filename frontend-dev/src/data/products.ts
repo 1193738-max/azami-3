@@ -12,6 +12,12 @@ export type ProductCategory = "night" | "beach" | "bestseller";
 export type ProductSize = "P" | "M" | "G" | "GG";
 export type ProductColor = "Preto" | "Branco" | "Champagne" | "Estampado";
 
+export interface CartItem {
+  product: Product;
+  size: ProductSize;
+  variantId?: number;
+  quantity: number;
+}
 export interface Product {
   id: string;
   name: string;
@@ -24,6 +30,13 @@ export interface Product {
   image: string;
   imageHover: string;
   isBestSeller?: boolean;
+  variants?: Array<{
+    id: number;
+    title: string;
+    option1: string | null;
+    option2: string | null;
+    price: string;
+  }>;
 }
 
 export const fallbackProducts: Product[] = [

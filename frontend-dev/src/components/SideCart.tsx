@@ -4,13 +4,49 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/data/products";
 
-const WHATSAPP_NUMBER = "5511918439062";
-
 const SideCart = () => {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalItems, subtotal } = useCart();
   const [notes, setNotes] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    // 1. Check if we have variant IDs (means we are on real Shopify)
+    const hasShopifyVariants = items.some(item => item.variantId);
+    
+    if (hasShopifyVariants) {
+      setIsSyncing(true);
+      try {
+        // Clear existing Shopify cart first to avoid mixups
+        await fetch('/cart/clear.js', { method: 'POST' });
+
+        // Add items to Shopify cart
+        await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map(item => ({
+              id: item.variantId,
+              quantity: item.quantity,
+              properties: {
+                'Tamanho': item.size,
+                'Nota': notes.trim()
+              }
+            }))
+          })
+        });
+
+        // Redirect to Shopify checkout
+        window.location.href = '/checkout';
+        return;
+      } catch (err) {
+        console.error("Shopify Checkout error, falling back to WhatsApp", err);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+
+    // 2. Fallback to WhatsApp if not on Shopify or no variant IDs
+    const WHATSAPP_NUMBER = "5511918439062";
     const productLines = items
       .map(
         (item) =>
@@ -105,10 +141,11 @@ const SideCart = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
                             <button
+                              disabled={isSyncing}
                               onClick={() =>
                                 updateQuantity(item.product.id, item.size, item.quantity - 1)
                               }
-                              className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors"
+                              className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors disabled:opacity-50"
                             >
                               <Minus size={12} />
                             </button>
@@ -116,10 +153,11 @@ const SideCart = () => {
                               {item.quantity}
                             </span>
                             <button
+                              disabled={isSyncing}
                               onClick={() =>
                                 updateQuantity(item.product.id, item.size, item.quantity + 1)
                               }
-                              className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors"
+                              className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors disabled:opacity-50"
                             >
                               <Plus size={12} />
                             </button>
@@ -130,8 +168,9 @@ const SideCart = () => {
                         </div>
                       </div>
                       <button
+                        disabled={isSyncing}
                         onClick={() => removeItem(item.product.id, item.size)}
-                        className="self-start text-muted-foreground/50 hover:text-destructive transition-colors"
+                        className="self-start text-muted-foreground/50 hover:text-destructive transition-colors disabled:opacity-50"
                       >
                         <X size={14} />
                       </button>
@@ -148,7 +187,8 @@ const SideCart = () => {
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Ex: Entregar após as 18h..."
                       rows={2}
-                      className="w-full bg-muted/50 border border-border rounded-sm px-3 py-2 font-body text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors resize-none"
+                      disabled={isSyncing}
+                      className="w-full bg-muted/50 border border-border rounded-sm px-3 py-2 font-body text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors resize-none disabled:opacity-50"
                     />
                   </div>
                 </>
@@ -167,14 +207,16 @@ const SideCart = () => {
                   </span>
                 </div>
                 <button
+                  disabled={isSyncing}
                   onClick={handleCheckout}
-                  className="w-full font-body text-[10px] tracking-[0.25em] uppercase py-3.5 bg-primary text-primary-foreground hover:opacity-90 transition-all font-medium mono-shine"
+                  className="w-full font-body text-[10px] tracking-[0.25em] uppercase py-3.5 bg-primary text-primary-foreground hover:opacity-90 transition-all font-medium mono-shine disabled:opacity-70 flex items-center justify-center"
                 >
-                  Finalizar Compra
+                  {isSyncing ? "Processando..." : "Finalizar Compra"}
                 </button>
                 <button
+                  disabled={isSyncing}
                   onClick={closeCart}
-                  className="w-full font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors py-2"
+                  className="w-full font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors py-2 disabled:opacity-50"
                 >
                   Continuar Comprando
                 </button>

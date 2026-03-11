@@ -1,11 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import type { Product, ProductSize } from "@/data/products";
-
-export interface CartItem {
-  product: Product;
-  size: ProductSize;
-  quantity: number;
-}
+import type { Product, ProductSize, CartItem } from "@/data/products";
 
 interface CartContextType {
   items: CartItem[];
@@ -35,6 +29,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const closeCart = useCallback(() => setIsOpen(false), []);
 
   const addItem = useCallback((product: Product, size: ProductSize) => {
+    // Find matching Shopify variant ID
+    const variant = product.variants?.find(v => 
+      v.option1 === size || v.option2 === size || v.title.includes(size)
+    );
+    const variantId = variant?.id;
+
     setItems((prev) => {
       const existing = prev.find(
         (i) => i.product.id === product.id && i.size === size
@@ -46,7 +46,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : i
         );
       }
-      return [...prev, { product, size, quantity: 1 }];
+      return [...prev, { product, size, variantId, quantity: 1 }];
     });
     setIsOpen(true);
   }, []);

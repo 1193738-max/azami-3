@@ -35,7 +35,8 @@ export const useShopifyProducts = () => {
               colors: colors,
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
-              isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller"))
+              isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller")),
+              variants: p.variants || []
             };
           });
         }

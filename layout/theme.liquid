@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ page_title }}</title>
+    {{ content_for_header }}
+    
+    {{ 'index.css' | asset_url | stylesheet_tag }}
+  </head>
+  <body>
+    <!-- 
+      You can add header sections here later, e.g.:
+      {% section 'header' %} 
+    -->
+
+    <main role="main" id="root">
+      {{ content_for_layout }}
+    </main>
+    
+    <!-- 
+      You can add footer sections here later, e.g.:
+      {% section 'footer' %} 
+    -->
+
+    <script src="{{ 'index.js' | asset_url }}" defer="defer"></script>
+  </body>
+</html>

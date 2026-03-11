@@ -18,6 +18,7 @@ export interface CartItem {
   variantId?: number;
   quantity: number;
 }
+
 export interface Product {
   id: string;
   name: string;
@@ -36,6 +37,8 @@ export interface Product {
     option1: string | null;
     option2: string | null;
     price: string;
+    available?: boolean;
+    inventory_quantity?: number;
   }>;
 }
 

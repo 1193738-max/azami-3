@@ -16,22 +16,23 @@ export const useShopifyProducts = () => {
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
-            // Extract real options from Shopify data
+            // Extract all options from Shopify data
             const sizeOption = p.options?.find((o: any) => 
-              o.name.toLowerCase() === 'tamanho' || 
-              o.name.toLowerCase() === 'size' ||
-              o.name.toLowerCase() === 'tam'
+              ['tamanho', 'size', 'tam', 'medida'].includes(o.name.toLowerCase())
             );
             
             const colorOption = p.options?.find((o: any) => 
-              o.name.toLowerCase() === 'cor' || 
-              o.name.toLowerCase() === 'color'
+              ['cor', 'color', 'estampa', 'modelo'].includes(o.name.toLowerCase())
             );
 
-            // Only use "P", "M", "G" as fallback if NO options exist at all
-            // If the product has variants and options, use those real values.
-            const sizes = sizeOption?.values || (p.options?.length > 0 ? [] : ["P", "M", "G"]);
-            const colors = colorOption?.values || (p.options?.length > 0 ? [] : ["Preto"]);
+            // Dynamically collect ALL other options that aren't Size or Color
+            // This ensures we don't lose custom fields like "Tecido" or "Decote"
+            const otherOptions = p.options?.filter((o: any) => 
+              !['tamanho', 'size', 'tam', 'medida', 'cor', 'color', 'estampa', 'modelo'].includes(o.name.toLowerCase())
+            ) || [];
+
+            const sizes = sizeOption?.values || [];
+            const colors = colorOption?.values || [];
             
             const tags = p.tags || [];
 
@@ -40,7 +41,10 @@ export const useShopifyProducts = () => {
               name: p.title,
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
-              details: tags,
+              details: [
+                ...tags,
+                ...otherOptions.map((o: any) => `${o.name}: ${o.values.join(', ')}`)
+              ],
               category: tags.map((t: string) => t.toLowerCase()),
               sizes: sizes,
               colors: colors,

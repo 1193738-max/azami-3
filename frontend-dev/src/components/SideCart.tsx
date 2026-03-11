@@ -11,73 +11,58 @@ const SideCart = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleCheckout = async () => {
-    // 1. Check if we have variant IDs (means we are on real Shopify and mapping worked)
+    // 1. Check if we have variant IDs
     const itemsWithVariants = items.filter(item => item.variantId);
     
-    // Check if we are physically on a Shopify domain
-    const isShopifyDomain = window.location.hostname.includes('myshopify.com') || window.location.hostname.includes('azami');
+    if (items.length === 0) {
+      toast.error("Sua sacola está vazia.");
+      return;
+    }
 
-    if (itemsWithVariants.length > 0 && isShopifyDomain) {
-      setIsSyncing(true);
-      try {
-        console.log("🛒 Iniciando checkout Shopify para os itens:", itemsWithVariants);
-        
-        // Clear existing Shopify cart first to avoid mixups
-        await fetch('/cart/clear.js', { method: 'POST' });
+    if (itemsWithVariants.length === 0) {
+      toast.error("Não foi possível identificar os produtos na Shopify. Tente remover e adicionar novamente.");
+      return;
+    }
 
-        // Add items to Shopify cart
-        const cartAddRes = await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items: itemsWithVariants.map(item => ({
-              id: item.variantId,
-              quantity: item.quantity,
-              properties: {
-                'Tamanho': item.size,
-                'Nota': notes.trim()
-              }
-            }))
-          })
-        });
+    setIsSyncing(true);
+    try {
+      console.log("🛒 Iniciando checkout Shopify...");
+      
+      // Clear existing Shopify cart
+      await fetch('/cart/clear.js', { method: 'POST' });
 
-        if (!cartAddRes.ok) {
-          throw new Error("Erro ao adicionar ao carrinho da Shopify");
-        }
+      // Add items using Shopify AJAX API
+      const cartAddRes = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: itemsWithVariants.map(item => ({
+            id: item.variantId,
+            quantity: item.quantity,
+            properties: {
+              'Tamanho': item.size,
+              'Nota': notes.trim()
+            }
+          }))
+        })
+      });
 
-        // Redirect to Shopify checkout
-        console.log("✅ Itens adicionados. Redirecionando...");
-        window.location.href = '/checkout';
-        return;
-      } catch (err) {
-        console.error("❌ Erro no checkout Shopify, tentando WhatsApp como fallback:", err);
-        toast.error("Ocorreu um erro no checkout nativo. Redirecionando para o WhatsApp...");
-      } finally {
-        setIsSyncing(false);
+      if (!cartAddRes.ok) {
+        throw new Error("Falha ao comunicar com o servidor da Shopify.");
       }
+
+      // Force a small delay to ensure Shopify processes the cart before redirect
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Redirect to Shopify checkout page
+      console.log("✅ Sucesso. Redirecionando para /checkout");
+      window.location.href = '/checkout';
+    } catch (err) {
+      console.error("❌ Checkout Error:", err);
+      toast.error("Erro ao processar o checkout. Verifique sua conexão ou tente novamente.");
+    } finally {
+      setIsSyncing(false);
     }
-
-    // 2. Fallback to WhatsApp if not on Shopify, mapping failed, or request failed
-    console.log("📱 Redirecionando para WhatsApp (ou fallback acionado)");
-    const WHATSAPP_NUMBER = "5511918439062";
-    const productLines = items
-      .map(
-        (item) =>
-          `${item.quantity}x ${item.product.name} - Tam ${item.size} - ${formatPrice(item.product.price)}`
-      )
-      .join("\n");
-
-    let message = `✨ Olá! Gostaria de finalizar o meu pedido na *AZAMI MODAS* 🛍️\n\n📦 *PRODUTOS SELECIONADOS:*\n\n${productLines}\n\n💰 *SUBTOTAL:* ${formatPrice(subtotal)}`;
-
-    if (notes.trim()) {
-      message += `\n\n📝 *OBSERVAÇÕES:* ${notes.trim()}`;
-    }
-
-    message += `\n\n📩 Aguardo o retorno para combinar o envio! 💛`;
-
-    const url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    closeCart();
-    window.open(url, "_blank");
   };
 
   return (
@@ -146,7 +131,7 @@ const SideCart = () => {
                         <div>
                           <h3 className="font-display text-xs tracking-wide text-foreground" style={{ opacity: item.variantId ? 1 : 0.6 }}>
                             {item.product.name}
-                            {!item.variantId && <span className="text-[8px] text-destructive ml-1">(Ajustando...)</span>}
+                            {!item.variantId && <span className="text-[8px] text-destructive ml-1">(Identificando...)</span>}
                           </h3>
                           <p className="font-body text-[10px] text-muted-foreground mt-0.5">
                             Tam: {item.size}

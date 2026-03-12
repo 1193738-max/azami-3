@@ -168,4 +168,13 @@
   .border-mono {
     border-color: hsl(0 0% 10% / 0.1);
   }
+
+  /* Utility to hide scrollbars but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }

@@ -84,6 +84,38 @@
           {% endfor %}
         {% endpaginate %}
       };
+
+      window.ShopifyNavigation = [
+        {% for link in linklists.main-menu.links %}
+          {
+            "title": {{ link.title | json }},
+            "url": {{ link.url | json }},
+            "handle": {{ link.handle | json }},
+            "links": [
+              {% for sub_link in link.links %}
+                {
+                  "title": {{ sub_link.title | json }},
+                  "url": {{ sub_link.url | json }},
+                  "handle": {{ sub_link.handle | json }}
+                }{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            ]
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ];
+
+      window.ShopifyCollections = {
+        {% for collection in collections %}
+          "{{ collection.handle }}": {
+            "title": {{ collection.title | json }},
+            "products": [
+              {% for product in collection.products %}
+                {{ product.handle | json }}{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            ]
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      };
     </script>
   </head>
   <body>

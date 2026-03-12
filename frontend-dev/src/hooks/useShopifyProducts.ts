@@ -13,6 +13,9 @@ export const useShopifyProducts = () => {
         const data = await res.json();
         
         if (data && Array.isArray(data.products) && data.products.length > 0) {
+          const inventorySource = (window as any).ShopifyInventory || {};
+          const collectionsSource = (window as any).ShopifyCollections || {};
+
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
@@ -29,8 +32,20 @@ export const useShopifyProducts = () => {
             
             const tags = p.tags || [];
 
-            // Pull inventory from theme-injected global object (most accurate)
-            const inventorySource = (window as any).ShopifyInventory?.[p.handle];
+            // Map product to categories based on Shopify Collections
+            const categories: string[] = [];
+            Object.entries(collectionsSource).forEach(([handle, collection]: [string, any]) => {
+                if (collection.products.includes(p.handle)) {
+                    categories.push(handle);
+                }
+            });
+
+            // Compatibility with existing local tags for backward compatibility if needed
+            if (tags.some((t: string) => t.toLowerCase().includes("night"))) categories.push("night");
+            if (tags.some((t: string) => t.toLowerCase().includes("beach"))) categories.push("beach");
+            if (tags.some((t: string) => t.toLowerCase().includes("bestseller"))) categories.push("bestseller");
+
+            const productInventory = inventorySource[p.handle] || {};
 
             return {
               id: p.handle,
@@ -38,21 +53,20 @@ export const useShopifyProducts = () => {
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
               details: tags,
-              category: tags.map((t: string) => t.toLowerCase()),
+              category: categories as any,
               sizes: sizes,
               colors: colors,
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
-              isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller")),
+              isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || tags.some((t: string) => t.toLowerCase().includes("bestseller")),
               variants: p.variants.map((v: any) => {
-                const stockInGlobal = inventorySource?.[v.id.toString()];
+                const stockInGlobal = productInventory[v.id.toString()];
                 const realQty = (stockInGlobal !== undefined && stockInGlobal !== null) ? stockInGlobal : v.inventory_quantity;
                 
                 return {
                     ...v,
                     price: v.price?.toString(),
                     inventory_quantity: realQty,
-                    // If we can't find quantity but it's marked as available, we trust it
                     available: v.available ?? (realQty > 0 || v.inventory_management === null)
                 };
               }) || [],

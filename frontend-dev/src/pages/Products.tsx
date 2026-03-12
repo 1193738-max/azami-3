@@ -13,20 +13,14 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const categoryLabels: Record<string, string> = {
-  night: "Night Out",
-  beach: "Beach Chic",
-  bestseller: "Best Sellers",
-};
-
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const initialCategory = searchParams.get("cat") as FiltersState["category"];
+  const initialCategory = searchParams.get("cat") || null;
   const { data: products = [], isLoading } = useShopifyProducts();
 
   const [filters, setFilters] = useState<FiltersState>({
     ...defaultFilters,
-    category: initialCategory || null,
+    category: initialCategory,
   });
 
   const filtered = useMemo(() => {
@@ -66,9 +60,14 @@ const Products = () => {
     return result;
   }, [filters, products]);
 
-  const title = filters.category
-    ? categoryLabels[filters.category] || "Produtos"
-    : "Todos os Produtos";
+  const title = useMemo(() => {
+      if (!filters.category) return "Todos os Produtos";
+      const shopifyCollections = (window as any).ShopifyCollections;
+      if (shopifyCollections && shopifyCollections[filters.category]) {
+          return shopifyCollections[filters.category].title;
+      }
+      return filters.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }, [filters.category]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,7 +105,11 @@ const Products = () => {
 
             {/* Product grid */}
             <div className="flex-1">
-              {filtered.length === 0 ? (
+              {isLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+              ) : filtered.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="font-body text-sm text-muted-foreground">
                     Nenhum produto encontrado com os filtros selecionados.

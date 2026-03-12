@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ProductCategory, ProductSize, ProductColor } from "@/data/products";
 
 interface FiltersState {
-  category: ProductCategory | null;
+  category: string | null;
   sizes: ProductSize[];
   colors: ProductColor[];
   priceRange: [number, number];
@@ -15,13 +15,6 @@ interface ProductFiltersProps {
   filters: FiltersState;
   onChange: (f: FiltersState) => void;
 }
-
-const categories: { value: ProductCategory | null; label: string }[] = [
-  { value: null, label: "Todos" },
-  { value: "night", label: "Night Out" },
-  { value: "beach", label: "Beach Chic" },
-  { value: "bestseller", label: "Best Sellers" },
-];
 
 const sizes: ProductSize[] = ["P", "M", "G", "GG"];
 const colors: { value: ProductColor; label: string; swatch: string }[] = [
@@ -45,8 +38,32 @@ const priceRanges: { label: string; range: [number, number] }[] = [
   { label: "Acima de R$350", range: [350, 9999] },
 ];
 
+// Dynamically pull categories from Shopify collections injected in theme.liquid
+const getDynamicCategories = () => {
+    const shopifyCollections = (window as any).ShopifyCollections;
+    const items = [{ value: null, label: "Todos" }];
+    
+    if (shopifyCollections) {
+        Object.entries(shopifyCollections).forEach(([handle, collection]: [string, any]) => {
+            // Exclude common utility collections like 'pagina-inicial' or 'all' if you want
+            if (handle !== 'all' && handle !== 'frontpage' && handle !== 'pagina-inicial') {
+                items.push({ value: handle, label: collection.title });
+            }
+        });
+    } else {
+        // Fallback for local dev
+        items.push(
+            { value: "night-out", label: "Night Out" },
+            { value: "beach-chic", label: "Beach Chic" },
+            { value: "best-sellers", label: "Best Sellers" }
+        );
+    }
+    return items;
+};
+
 /* ── Desktop Sidebar Filters ── */
 export const DesktopFilters = ({ filters, onChange }: ProductFiltersProps) => {
+  const categories = useMemo(() => getDynamicCategories(), []);
   const update = (partial: Partial<FiltersState>) =>
     onChange({ ...filters, ...partial });
 
@@ -59,9 +76,9 @@ export const DesktopFilters = ({ filters, onChange }: ProductFiltersProps) => {
             <button
               key={c.label}
               onClick={() => update({ category: c.value })}
-              className={`block font-body text-[11px] tracking-wider transition-colors ${
+              className={`block text-left font-body text-[11px] tracking-wider transition-colors ${
                 filters.category === c.value
-                  ? "text-primary"
+                  ? "text-primary font-bold"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -151,6 +168,7 @@ export const DesktopFilters = ({ filters, onChange }: ProductFiltersProps) => {
 export const MobileFilterBar = ({ filters, onChange }: ProductFiltersProps) => {
   const [open, setOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  const categories = useMemo(() => getDynamicCategories(), []);
 
   const update = (partial: Partial<FiltersState>) =>
     onChange({ ...filters, ...partial });

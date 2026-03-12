@@ -70,7 +70,8 @@
         {% endif %}
 
         shopName: {{ shop.name | json }},
-        fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
+        fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }},
+        designMode: {% if request.design_mode %}true{% else %}false{% endif %}
       };
 
       window.ShopifyInventory = {
@@ -124,7 +125,7 @@
       {% section 'header' %} 
     -->
 
-    <main role="main" id="root">
+    <main role="main">
       {{ content_for_layout }}
     </main>
     

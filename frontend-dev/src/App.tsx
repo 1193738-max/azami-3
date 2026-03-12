@@ -41,7 +41,7 @@ const App = () => (
               <Route path="/guia-de-medidas" element={<GuiaMedidas />} />
               <Route path="/contato" element={<Contato />} />
               {/* Em modo Editor da Shopify, se cair em rota desconhecida, tentamos mostrar a Index para evitar tela de 404 durante edição */}
-              <Route path="*" element={(window as any).Shopify?.designMode ? <Index /> : <NotFound />} />
+              <Route path="*" element={((window as any).Shopify?.designMode || (window as any).ShopifyThemeSettings?.designMode) ? <Index /> : <NotFound />} />
             </Routes>
           </CartProvider>
         </WishlistProvider>

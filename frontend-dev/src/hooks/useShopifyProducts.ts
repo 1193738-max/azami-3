@@ -16,35 +16,34 @@ export const useShopifyProducts = () => {
           const inventorySource = (window as any).ShopifyInventory || {};
           const collectionsSource = (window as any).ShopifyCollections || {};
 
+          console.log("Found Shopify products:", data.products.length);
+
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
-            const sizeIdx = p.options?.findIndex((o: any) => 
-              ['tamanho', 'size', 'tam', 'medida', 'tamanho '].includes(o.name.toLowerCase().trim())
+            const sizeIdx = (p.options || [])?.findIndex((o: any) => 
+              ['tamanho', 'size', 'tam', 'medida', 'tamanho '].includes(o.name?.toLowerCase().trim())
             );
             
-            const colorIdx = p.options?.findIndex((o: any) => 
-              ['cor', 'color', 'estampa', 'modelo', 'cores'].includes(o.name.toLowerCase().trim())
+            const colorIdx = (p.options || [])?.findIndex((o: any) => 
+              ['cor', 'color', 'estampa', 'modelo', 'cores'].includes(o.name?.toLowerCase().trim())
             );
 
-            const sizes = sizeIdx !== -1 ? p.options[sizeIdx].values : [];
-            const colors = colorIdx !== -1 ? p.options[colorIdx].values : [];
+            const sizes = sizeIdx !== -1 ? p.options[sizeIdx]?.values || [] : [];
+            const colors = colorIdx !== -1 ? p.options[colorIdx]?.values || [] : [];
             
-            // In Shopify products.json, tags is usually a comma-separated string
             const tagsString = p.tags || "";
             const tagsArray = typeof tagsString === 'string' 
               ? tagsString.split(',').map(tag => tag.trim()) 
               : (Array.isArray(tagsString) ? tagsString : []);
 
-            // Map product to categories based on Shopify Collections
             const categories: string[] = [];
             Object.entries(collectionsSource).forEach(([handle, collection]: [string, any]) => {
-                if (collection.products.includes(p.handle)) {
+                if (collection?.products?.includes(p.handle)) {
                     categories.push(handle);
                 }
             });
 
-            // Mapping for homepage sections - strict to user intents
             const lowerTags = tagsArray.map(t => t.toLowerCase().trim());
             if (lowerTags.includes("night") || lowerTags.includes("noite") || lowerTags.includes("night out")) categories.push("night");
             if (lowerTags.includes("beach") || lowerTags.includes("praia") || lowerTags.includes("beach chic")) categories.push("beach");
@@ -52,19 +51,23 @@ export const useShopifyProducts = () => {
 
             const productInventory = inventorySource[p.handle] || {};
 
+            // Better Image Handling: Use featured image (p.image) or fallback to images[0]
+            const featuredImage = p.image?.src || (p.images && p.images[0]?.src) || "";
+            const secondaryImage = (p.images && p.images[1]?.src) || featuredImage;
+
             return {
-              id: p.handle,
-              name: p.title,
+              id: p.handle || p.id.toString(),
+              name: p.title || "Produto sem título",
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
               details: tagsArray,
               category: categories as any,
               sizes: sizes,
               colors: colors,
-              image: p.images && p.images[0] ? p.images[0].src : "",
-              imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
+              image: featuredImage,
+              imageHover: secondaryImage,
               isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || lowerTags.some(t => t.includes("best")),
-              variants: p.variants.map((v: any) => {
+              variants: (p.variants || []).map((v: any) => {
                 const stockInGlobal = productInventory[v.id.toString()];
                 const realQty = (stockInGlobal !== undefined && stockInGlobal !== null) ? stockInGlobal : v.inventory_quantity;
                 
@@ -74,7 +77,7 @@ export const useShopifyProducts = () => {
                     inventory_quantity: realQty,
                     available: v.available ?? (realQty > 0 || v.inventory_management === null)
                 };
-              }) || [],
+              }),
               optionMapping: {
                 size: sizeIdx !== -1 ? `option${sizeIdx + 1}` : null,
                 color: colorIdx !== -1 ? `option${colorIdx + 1}` : null

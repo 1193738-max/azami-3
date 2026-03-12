@@ -106,13 +106,25 @@
       ];
 
       window.ShopifyCollections = {
+        "all": {
+          "title": "Todos os Produtos",
+          "products": [
+            {% paginate collections.all.products by 1000 %}
+              {% for product in collections.all.products %}
+                {{ product.handle | json }}{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            {% endpaginate %}
+          ]
+        },
         {% for collection in collections %}
           "{{ collection.handle }}": {
             "title": {{ collection.title | json }},
             "products": [
-              {% for product in collection.products %}
-                {{ product.handle | json }}{% unless forloop.last %},{% endunless %}
-              {% endfor %}
+              {% paginate collection.products by 1000 %}
+                {% for product in collection.products %}
+                  {{ product.handle | json }}{% unless forloop.last %},{% endunless %}
+                {% endfor %}
+              {% endpaginate %}
             ]
           }{% unless forloop.last %},{% endunless %}
         {% endfor %}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
@@ -22,6 +22,12 @@ const Products = () => {
     ...defaultFilters,
     category: initialCategory,
   });
+
+  // Sync filters with URL params (for footer/header navigation)
+  useEffect(() => {
+    const cat = searchParams.get("cat") || null;
+    setFilters(f => ({ ...f, category: cat }));
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     let result = [...products];

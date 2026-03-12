@@ -41,9 +41,19 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h4 className="font-body text-[10px] tracking-[0.3em] uppercase text-[hsl(0_0%_92%)] mb-6">Explorar</h4>
             <ul className="space-y-4">
-              {["Night Collection", "Beach Collection", "Best Sellers", "Promoções"].map((l) => (
-                <li key={l}>
-                  <a href="#" className="font-body text-xs hover:text-[hsl(0_0%_92%)] transition-colors">{l}</a>
+              {[
+                { label: "Night Collection", cat: "night" },
+                { label: "Beach Collection", cat: "beach" },
+                { label: "Best Sellers", cat: "bestseller" },
+                { label: "Promoções", cat: "sale" }
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link 
+                    to={`/produtos?cat=${link.cat}`} 
+                    className="font-body text-xs hover:text-[hsl(0_0%_92%)] transition-colors"
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -26,19 +26,19 @@ const BestSellers = () => {
   if (!isLoading && bestSellers.length === 0) return null; // Não mostra seção vazia
 
   return (
-    <section id="bestsellers" className="py-16 md:py-36 bg-background">
+    <section id="bestsellers" className="py-12 md:py-36 bg-background">
       <div className="container mx-auto px-5 md:px-12">
         {/* Header */}
-        <div className="flex items-end justify-between mb-8 md:mb-16">
+        <div className="flex items-end justify-between mb-8 md:mb-12">
           <div>
-            <p className="font-body text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-primary mb-2">
+            <p className="font-body text-[9px] tracking-[0.4em] uppercase text-primary mb-2">
               Mais Desejadas
             </p>
             <h2 className="font-display text-3xl md:text-5xl font-light text-foreground">
               Best Sellers
             </h2>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="hidden md:flex items-center gap-1.5">
             <button onClick={prev} className="w-9 h-9 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors" aria-label="Anterior">
               <ChevronLeft size={16} />
             </button>
@@ -48,47 +48,64 @@ const BestSellers = () => {
           </div>
         </div>
 
-        {/* Carousel */}
-        <div className="overflow-hidden">
-          <motion.div
-            animate={{ x: `-${current * 52}%` }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-            className="flex gap-3 md:gap-5"
-            style={{ width: "max-content" }}
+        {/* Carousel Container */}
+        <div className="relative group">
+          <div 
+            className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              scrollBehavior: 'smooth'
+            }}
           >
             {bestSellers.map((product, i) => (
-              <div key={product.id} className="w-[46vw] sm:w-[40vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0 group cursor-pointer">
-                <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-muted">
-                  <Link to={`/produto/${product.id}`}>
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div 
+                key={product.id} 
+                className="w-[75vw] sm:w-[45vw] md:w-[30vw] lg:w-[22vw] flex-shrink-0 snap-start group/item"
+              >
+                <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-muted group/image">
+                  <Link to={`/produto/${product.id}`} className="block h-full">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-105" 
+                      loading="lazy"
+                    />
                   </Link>
-                  <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm px-2.5 py-0.5">
-                    <span className="font-display text-base text-primary">#{i + 1}</span>
+                  <div className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm px-2.5 py-0.5">
+                    <span className="font-display text-sm text-primary">#{i + 1}</span>
                   </div>
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="w-7 h-7 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Favoritar"><Heart size={12} /></button>
+                  <div className="absolute top-3 right-3 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-300">
+                    <button className="w-8 h-8 bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Favoritar">
+                      <Heart size={13} />
+                    </button>
                   </div>
-                  <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400">
-                    <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[9px] tracking-[0.15em] uppercase py-2.5 hover:bg-primary/90 transition-colors">Garantir meu Look</Link>
+                  
+                  {/* Action Bar - Desktop Always Hide/Hover, Mobile visible or subtle */}
+                  <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover/item:translate-y-0 transition-transform duration-400 z-10 hidden md:block">
+                    <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[10px] tracking-[0.1em] uppercase py-3 hover:bg-primary/95">
+                      Garantir meu Look
+                    </Link>
                   </div>
-                  <div className="absolute inset-0 border border-border/50 group-hover:border-primary/20 transition-colors" />
                 </div>
+                
                 <Link to={`/produto/${product.id}`}>
-                  <h3 className="font-body text-[11px] md:text-sm text-foreground font-light mb-0.5">{product.name}</h3>
-                  <p className="font-body text-[10px] md:text-[11px] text-primary font-medium">{formatPrice(product.price)}</p>
+                  <h3 className="font-body text-xs md:text-sm text-foreground font-light mb-0.5 truncate">{product.name}</h3>
+                  <p className="font-body text-[11px] md:text-xs text-primary font-medium">{formatPrice(product.price)}</p>
                 </Link>
               </div>
             ))}
-          </motion.div>
-        </div>
+          </div>
 
-        {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-8 md:mt-12">
-          {bestSellers.map((_, i) => (
-            <button key={i} onClick={() => setCurrent(i)}
-              className={`h-px transition-all duration-300 ${i === current ? "w-8 bg-primary" : "w-3 bg-border"}`}
-              aria-label={`Slide ${i + 1}`} />
-          ))}
+          {/* Progress Indicator - Mobile mostly */}
+          <div className="md:hidden flex items-center justify-center gap-1.5 mt-2">
+            {bestSellers.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-[2px] rounded-full transition-all duration-300 ${i === current ? "w-6 bg-primary" : "w-2 bg-border"}`} 
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -45,26 +45,33 @@ const BeachCollection = () => {
           </motion.p>
         </div>
 
-        {/* Product grid */}
-        <div className="grid grid-cols-2 gap-2.5 md:gap-6">
+        {/* Mobile: Horizontal Flow | Desktop: Grid */}
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-hide snap-x snap-mandatory">
           {beachProducts.map((product, i) => (
-            <motion.div key={product.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group cursor-pointer">
+            <motion.div 
+              key={product.id} 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }} 
+              className="min-w-[75vw] sm:min-w-[45vw] md:min-w-0 group cursor-pointer snap-center"
+            >
               <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-muted">
                 <Link to={`/produto/${product.id}`} className="block h-full w-full">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </Link>
-                <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="w-7 h-7 md:w-8 md:h-8 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Favoritar"><Heart size={12} /></button>
+                <div className="absolute top-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <button className="w-8 h-8 bg-white/80 backdrop-blur-sm flex items-center justify-center border border-black/5" aria-label="Favoritar"><Heart size={13} /></button>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400">
-                  <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[9px] md:text-[10px] tracking-[0.15em] uppercase py-2.5 md:py-3 hover:bg-primary/90 transition-colors">Ver Disponibilidade</Link>
+                <div className="absolute inset-x-0 bottom-0 p-4 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
+                   <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[10px] tracking-[0.1em] uppercase py-3 hover:bg-primary/90">
+                     Detalhes
+                   </Link>
                 </div>
-                <div className="absolute inset-0 border border-border/20 group-hover:border-primary/20 transition-colors duration-300" />
+                <div className="absolute inset-0 border border-border/20 group-hover:border-primary/20 transition-colors" />
               </div>
               <Link to={`/produto/${product.id}`}>
-                <h3 className="font-body text-[11px] md:text-sm text-foreground font-light leading-snug mb-1">{product.name}</h3>
-                <p className="font-body text-[10px] md:text-[11px] text-primary font-medium">{formatPrice(product.price)}</p>
+                <h3 className="font-body text-xs md:text-sm text-foreground font-light mb-0.5 truncate">{product.name}</h3>
+                <p className="font-body text-[11px] md:text-xs text-primary font-medium">{formatPrice(product.price)}</p>
               </Link>
             </motion.div>
           ))}

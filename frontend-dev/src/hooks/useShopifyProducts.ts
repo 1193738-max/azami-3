@@ -44,11 +44,11 @@ export const useShopifyProducts = () => {
                 }
             });
 
-            // Fuzzy mapping for homepage sections and filters
-            const lowerTags = tagsArray.map(t => t.toLowerCase());
-            if (lowerTags.some(t => t.includes("night") || t.includes("noite"))) categories.push("night");
-            if (lowerTags.some(t => t.includes("beach") || t.includes("praia") || t.includes("chic"))) categories.push("beach");
-            if (lowerTags.some(t => t.includes("best") || t.includes("vendido"))) categories.push("bestseller");
+            // Mapping for homepage sections - strict to user intents
+            const lowerTags = tagsArray.map(t => t.toLowerCase().trim());
+            if (lowerTags.includes("night") || lowerTags.includes("noite") || lowerTags.includes("night out")) categories.push("night");
+            if (lowerTags.includes("beach") || lowerTags.includes("praia") || lowerTags.includes("beach chic")) categories.push("beach");
+            if (lowerTags.includes("best") || lowerTags.includes("bestseller") || lowerTags.includes("mais vendido") || lowerTags.includes("mais vendidos")) categories.push("bestseller");
 
             const productInventory = inventorySource[p.handle] || {};
 

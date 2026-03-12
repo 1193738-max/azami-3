@@ -12,8 +12,7 @@ const NightCollection = () => {
     return allProducts.filter(p => 
         p.category.includes("night") || 
         p.category.includes("noite") || 
-        p.category.includes("night-out") ||
-        p.category.includes("corset") // Add common case for this store
+        p.category.includes("night-out")
     ).slice(0, 4);
   }, [allProducts]);
 

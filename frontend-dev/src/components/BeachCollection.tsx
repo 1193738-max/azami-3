@@ -12,8 +12,7 @@ const BeachCollection = () => {
     return allProducts.filter(p => 
         p.category.includes("beach") || 
         p.category.includes("praia") || 
-        p.category.includes("beach-chic") ||
-        p.category.includes("vestidos") // Add common case for this store
+        p.category.includes("beach-chic")
     ).slice(0, 4);
   }, [allProducts]);
 

@@ -8,7 +8,7 @@ import model07 from "@/assets/model-07.jpg";
 import model08 from "@/assets/model-08.jpg";
 import model09 from "@/assets/model-09.jpg";
 
-export type ProductCategory = "night" | "beach" | "bestseller";
+export type ProductCategory = "night" | "beach" | "bestseller" | string;
 export type ProductSize = "P" | "M" | "G" | "GG";
 export type ProductColor = string; // More flexible
 

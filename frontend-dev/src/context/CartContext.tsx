@@ -61,7 +61,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const addItem = useCallback((product: Product, size: ProductSize, color?: string) => {
     const variant = findVariant(product, size, color);
     const variantId = variant?.id;
-    const stockLimit = variant?.inventory_quantity ?? 999;
+    const stockLimit = variant?.inventory_quantity;
     const isManagementActive = variant?.inventory_management !== null;
 
     setItems((prev) => {
@@ -71,8 +71,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       if (existingIdx !== -1) {
         const currentQty = prev[existingIdx].quantity;
-        if (isManagementActive && currentQty >= stockLimit) {
-          toast.error(`Desculpe, só temos ${stockLimit} unidades em estoque deste item.`);
+        // Check if management is active AND we have a valid stock number
+        if (isManagementActive && stockLimit !== undefined && stockLimit !== null && currentQty >= stockLimit) {
+          toast.error(`Limite atingido (${stockLimit} un. no estoque)`);
           return prev;
         }
         return prev.map((i, idx) =>
@@ -80,8 +81,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
       }
 
-      if (isManagementActive && stockLimit <= 0) {
-        toast.error("Este item acabou de esgotar!");
+      // Initial add check
+      if (isManagementActive && stockLimit !== undefined && stockLimit !== null && stockLimit <= 0) {
+        toast.error("Este item está esgotado!");
         return prev;
       }
 
@@ -108,11 +110,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (!item) return prev;
 
         const variant = findVariant(item.product, item.size);
-        const stockLimit = variant?.inventory_quantity ?? 999;
+        const stockLimit = variant?.inventory_quantity;
         const isManagementActive = variant?.inventory_management !== null;
 
-        if (isManagementActive && qty > stockLimit) {
-          toast.error(`Limite de estoque atingido (${stockLimit} un.)`);
+        if (isManagementActive && stockLimit !== undefined && stockLimit !== null && qty > stockLimit) {
+          toast.error(`Apenas ${stockLimit} un. disponíveis`);
           return prev.map((i) =>
             i.product.id === productId && i.size === size
               ? { ...i, quantity: stockLimit }
@@ -134,20 +136,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        isOpen,
-        openCart,
-        closeCart,
-        addItem,
-        removeItem,
-        updateQuantity,
-        totalItems,
-        subtotal,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+    <div className="cart-wrapper">
+      <CartContext.Provider
+        value={{
+          items,
+          isOpen,
+          openCart,
+          closeCart,
+          addItem,
+          removeItem,
+          updateQuantity,
+          totalItems,
+          subtotal,
+        }}
+      >
+        {children}
+      </CartContext.Provider>
+    </div>
   );
 };

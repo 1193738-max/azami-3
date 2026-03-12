@@ -72,6 +72,18 @@
         shopName: {{ shop.name | json }},
         fallbackLogoUrl: {{ 'azami-logo.png' | asset_url | json }}
       };
+
+      window.ShopifyInventory = {
+        {% paginate collections.all.products by 1000 %}
+          {% for product in collections.all.products %}
+            "{{ product.handle }}": {
+              {% for variant in product.variants %}
+                "{{ variant.id }}": {{ variant.inventory_quantity | default: 0 }}{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        {% endpaginate %}
+      };
     </script>
   </head>
   <body>

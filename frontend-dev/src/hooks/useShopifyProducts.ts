@@ -16,7 +16,6 @@ export const useShopifyProducts = () => {
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
-            // Map option names to their positions (1, 2, 3)
             const sizeIdx = p.options?.findIndex((o: any) => 
               ['tamanho', 'size', 'tam', 'medida'].includes(o.name.toLowerCase())
             );
@@ -30,6 +29,9 @@ export const useShopifyProducts = () => {
             
             const tags = p.tags || [];
 
+            // Pull inventory from theme-injected global object (most accurate)
+            const inventorySource = (window as any).ShopifyInventory?.[p.handle];
+
             return {
               id: p.handle,
               name: p.title,
@@ -42,15 +44,18 @@ export const useShopifyProducts = () => {
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
               isBestSeller: tags.some((t: string) => t.toLowerCase().includes("bestseller")),
-              variants: p.variants.map((v: any) => ({
-                ...v,
-                // Ensure price is a string for consistency
-                price: v.price?.toString(),
-                // Inventory quantity is crucial
-                inventory_quantity: v.inventory_quantity ?? 0,
-                // Availability flag
-                available: v.available ?? (v.inventory_quantity > 0 || v.inventory_management === null)
-              })) || [],
+              variants: p.variants.map((v: any) => {
+                const stockInGlobal = inventorySource?.[v.id.toString()];
+                const realQty = (stockInGlobal !== undefined && stockInGlobal !== null) ? stockInGlobal : v.inventory_quantity;
+                
+                return {
+                    ...v,
+                    price: v.price?.toString(),
+                    inventory_quantity: realQty,
+                    // If we can't find quantity but it's marked as available, we trust it
+                    available: v.available ?? (realQty > 0 || v.inventory_management === null)
+                };
+              }) || [],
               optionMapping: {
                 size: sizeIdx !== -1 ? `option${sizeIdx + 1}` : null,
                 color: colorIdx !== -1 ? `option${colorIdx + 1}` : null

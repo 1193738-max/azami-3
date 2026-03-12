@@ -11,7 +11,6 @@ import WhatsAppFloating from "@/components/WhatsAppFloating";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
-import Account from "./pages/Account";
 import Rastreio from "./pages/Rastreio";
 import Devolucoes from "./pages/Devolucoes";
 import GuiaMedidas from "./pages/GuiaMedidas";
@@ -37,7 +36,6 @@ const App = () => (
               <Route path="/collections/all" element={<Products />} />
               <Route path="/produto/:id" element={<ProductDetails />} />
               <Route path="/products/:id" element={<ProductDetails />} />
-              <Route path="/conta" element={<Account />} />
               <Route path="/rastreio" element={<Rastreio />} />
               <Route path="/devolucoes" element={<Devolucoes />} />
               <Route path="/guia-de-medidas" element={<GuiaMedidas />} />

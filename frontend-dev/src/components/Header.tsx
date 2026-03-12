@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Menu, X, ShoppingBag, Search, Heart, User } from "lucide-react";
+import { Menu, X, ShoppingBag, Search, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import azamiLogo from "@/assets/azami-logo.png";
@@ -113,13 +113,6 @@ const Header = () => {
             >
               <Search size={16} />
             </button>
-            <Link
-              to="/conta"
-              className="hidden md:block text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-110"
-              aria-label="Minha Conta"
-            >
-              <User size={16} />
-            </Link>
             <button
               onClick={openWishlist}
               className="hidden md:block text-muted-foreground hover:text-foreground transition-all duration-300 relative hover:scale-110"
@@ -169,13 +162,6 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex items-center justify-between border-t border-border pt-6 mt-2">
-                <Link
-                  to="/conta"
-                  className="font-body text-[10px] tracking-[0.25em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
-                >
-                  <User size={14} />
-                  Minha Conta
-                </Link>
                 <button
                   onClick={() => setIsSearchOpen(true)}
                   className="font-body text-[10px] tracking-[0.25em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"

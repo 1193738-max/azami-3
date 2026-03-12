@@ -54,7 +54,6 @@ const Footer = () => {
             <h4 className="font-body text-[10px] tracking-[0.3em] uppercase text-[hsl(0_0%_92%)] mb-6">Ajuda</h4>
             <ul className="space-y-4">
               {[
-                { label: "Minha Conta", path: "/conta" },
                 { label: "Rastreio e Frete", path: "/rastreio" },
                 { label: "Devoluções", path: "/devolucoes" },
                 { label: "Guia de Medidas", path: "/guia-de-medidas" },

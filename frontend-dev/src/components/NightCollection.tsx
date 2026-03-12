@@ -9,7 +9,12 @@ const NightCollection = () => {
   const { data: allProducts = [], isLoading } = useShopifyProducts();
   
   const nightProducts = useMemo(() => {
-    return allProducts.filter(p => p.category.includes("night") || p.category.includes("noite")).slice(0, 4);
+    return allProducts.filter(p => 
+        p.category.includes("night") || 
+        p.category.includes("noite") || 
+        p.category.includes("night-out") ||
+        p.category.includes("corset") // Add common case for this store
+    ).slice(0, 4);
   }, [allProducts]);
 
   if (isLoading && nightProducts.length === 0) return null;
@@ -115,9 +120,9 @@ const NightCollection = () => {
 
         {/* CTA */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }} className="text-center mt-10 md:mt-14">
-          <a href="#" className="font-body text-[10px] tracking-[0.2em] uppercase text-white border-b border-white/30 hover:border-white pb-1 transition-colors duration-300">
+          <Link to="/produtos?cat=night" className="font-body text-[10px] tracking-[0.2em] uppercase text-white border-b border-white/30 hover:border-white pb-1 transition-colors duration-300">
             Ver toda a coleção Noite
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

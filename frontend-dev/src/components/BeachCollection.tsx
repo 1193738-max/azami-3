@@ -9,7 +9,12 @@ const BeachCollection = () => {
   const { data: allProducts = [], isLoading } = useShopifyProducts();
   
   const beachProducts = useMemo(() => {
-    return allProducts.filter(p => p.category.includes("beach") || p.category.includes("praia")).slice(0, 4);
+    return allProducts.filter(p => 
+        p.category.includes("beach") || 
+        p.category.includes("praia") || 
+        p.category.includes("beach-chic") ||
+        p.category.includes("vestidos") // Add common case for this store
+    ).slice(0, 4);
   }, [allProducts]);
 
   if (isLoading && beachProducts.length === 0) return null;
@@ -67,9 +72,9 @@ const BeachCollection = () => {
         </div>
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }} className="text-center mt-10 md:mt-14">
-          <a href="#" className="font-body text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 hover:border-primary hover:text-primary pb-1 transition-colors duration-300">
+          <Link to="/produtos?cat=beach" className="font-body text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 hover:border-primary hover:text-primary pb-1 transition-colors duration-300">
             Ver toda a coleção Praia
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

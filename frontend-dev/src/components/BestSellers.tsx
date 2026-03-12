@@ -10,7 +10,10 @@ const BestSellers = () => {
   
   const bestSellers = useMemo(() => {
     return allProducts.filter(p => 
-      p.isBestSeller || p.category.includes("bestseller") || p.category.includes("mais-vendidos")
+      p.isBestSeller || 
+      p.category.includes("bestseller") || 
+      p.category.includes("best-sellers") ||
+      p.category.includes("mais-vendidos")
     ).slice(0, 8);
   }, [allProducts]);
 

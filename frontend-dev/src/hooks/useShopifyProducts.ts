@@ -20,17 +20,21 @@ export const useShopifyProducts = () => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
             
             const sizeIdx = p.options?.findIndex((o: any) => 
-              ['tamanho', 'size', 'tam', 'medida'].includes(o.name.toLowerCase())
+              ['tamanho', 'size', 'tam', 'medida', 'tamanho '].includes(o.name.toLowerCase().trim())
             );
             
             const colorIdx = p.options?.findIndex((o: any) => 
-              ['cor', 'color', 'estampa', 'modelo'].includes(o.name.toLowerCase())
+              ['cor', 'color', 'estampa', 'modelo', 'cores'].includes(o.name.toLowerCase().trim())
             );
 
             const sizes = sizeIdx !== -1 ? p.options[sizeIdx].values : [];
             const colors = colorIdx !== -1 ? p.options[colorIdx].values : [];
             
-            const tags = p.tags || [];
+            // In Shopify products.json, tags is usually a comma-separated string
+            const tagsString = p.tags || "";
+            const tagsArray = typeof tagsString === 'string' 
+              ? tagsString.split(',').map(tag => tag.trim()) 
+              : (Array.isArray(tagsString) ? tagsString : []);
 
             // Map product to categories based on Shopify Collections
             const categories: string[] = [];
@@ -40,10 +44,11 @@ export const useShopifyProducts = () => {
                 }
             });
 
-            // Compatibility with existing local tags for backward compatibility if needed
-            if (tags.some((t: string) => t.toLowerCase().includes("night"))) categories.push("night");
-            if (tags.some((t: string) => t.toLowerCase().includes("beach"))) categories.push("beach");
-            if (tags.some((t: string) => t.toLowerCase().includes("bestseller"))) categories.push("bestseller");
+            // Fuzzy mapping for homepage sections and filters
+            const lowerTags = tagsArray.map(t => t.toLowerCase());
+            if (lowerTags.some(t => t.includes("night") || t.includes("noite"))) categories.push("night");
+            if (lowerTags.some(t => t.includes("beach") || t.includes("praia") || t.includes("chic"))) categories.push("beach");
+            if (lowerTags.some(t => t.includes("best") || t.includes("vendido"))) categories.push("bestseller");
 
             const productInventory = inventorySource[p.handle] || {};
 
@@ -52,13 +57,13 @@ export const useShopifyProducts = () => {
               name: p.title,
               price: price,
               description: p.body_html ? p.body_html.replace(/<[^>]+>/g, '') : "",
-              details: tags,
+              details: tagsArray,
               category: categories as any,
               sizes: sizes,
               colors: colors,
               image: p.images && p.images[0] ? p.images[0].src : "",
               imageHover: p.images && p.images[1] ? p.images[1].src : (p.images && p.images[0] ? p.images[0].src : ""),
-              isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || tags.some((t: string) => t.toLowerCase().includes("bestseller")),
+              isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || lowerTags.some(t => t.includes("best")),
               variants: p.variants.map((v: any) => {
                 const stockInGlobal = productInventory[v.id.toString()];
                 const realQty = (stockInGlobal !== undefined && stockInGlobal !== null) ? stockInGlobal : v.inventory_quantity;

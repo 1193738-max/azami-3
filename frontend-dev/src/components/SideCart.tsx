@@ -11,7 +11,6 @@ const SideCart = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleCheckout = async () => {
-    // 1. Check if we have variant IDs
     const itemsWithVariants = items.filter(item => item.variantId);
     
     if (items.length === 0) {
@@ -41,6 +40,7 @@ const SideCart = () => {
             quantity: item.quantity,
             properties: {
               'Tamanho': item.size,
+              'Cor': item.color || 'Padrão',
               'Nota': notes.trim()
             }
           }))
@@ -51,11 +51,7 @@ const SideCart = () => {
         throw new Error("Falha ao comunicar com o servidor da Shopify.");
       }
 
-      // Force a small delay to ensure Shopify processes the cart before redirect
       await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Redirect to Shopify checkout page
-      console.log("✅ Sucesso. Redirecionando para /checkout");
       window.location.href = '/checkout';
     } catch (err) {
       console.error("❌ Checkout Error:", err);
@@ -117,9 +113,9 @@ const SideCart = () => {
                 </div>
               ) : (
                 <>
-                  {items.map((item) => (
+                  {items.map((item, idx) => (
                     <div
-                      key={`${item.product.id}-${item.size}`}
+                      key={`${item.product.id}-${item.size}-${item.color || idx}`}
                       className="flex gap-4 pb-4 border-b border-border last:border-0"
                     >
                       <img
@@ -129,20 +125,27 @@ const SideCart = () => {
                       />
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          <h3 className="font-display text-xs tracking-wide text-foreground" style={{ opacity: item.variantId ? 1 : 0.6 }}>
+                          <h3 className="font-display text-xs tracking-wide text-foreground">
                             {item.product.name}
                             {!item.variantId && <span className="text-[8px] text-destructive ml-1">(Identificando...)</span>}
                           </h3>
-                          <p className="font-body text-[10px] text-muted-foreground mt-0.5">
-                            Tam: {item.size}
-                          </p>
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                            <p className="font-body text-[10px] text-muted-foreground">
+                              Tam: {item.size}
+                            </p>
+                            {item.color && (
+                                <p className="font-body text-[10px] text-muted-foreground">
+                                  Cor: {item.color}
+                                </p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
                             <button
                               disabled={isSyncing}
                               onClick={() =>
-                                updateQuantity(item.product.id, item.size, item.quantity - 1)
+                                updateQuantity(item.product.id, item.size, item.color, item.quantity - 1)
                               }
                               className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors disabled:opacity-50"
                             >
@@ -154,7 +157,7 @@ const SideCart = () => {
                             <button
                               disabled={isSyncing}
                               onClick={() =>
-                                updateQuantity(item.product.id, item.size, item.quantity + 1)
+                                updateQuantity(item.product.id, item.size, item.color, item.quantity + 1)
                               }
                               className="w-6 h-6 border border-border flex items-center justify-center text-foreground/60 hover:border-primary transition-colors disabled:opacity-50"
                             >
@@ -168,7 +171,7 @@ const SideCart = () => {
                       </div>
                       <button
                         disabled={isSyncing}
-                        onClick={() => removeItem(item.product.id, item.size)}
+                        onClick={() => removeItem(item.product.id, item.size, item.color)}
                         className="self-start text-muted-foreground/50 hover:text-destructive transition-colors disabled:opacity-50"
                       >
                         <X size={14} />
@@ -205,20 +208,22 @@ const SideCart = () => {
                     {formatPrice(subtotal)}
                   </span>
                 </div>
-                <button
-                  disabled={isSyncing}
-                  onClick={handleCheckout}
-                  className="w-full font-body text-[10px] tracking-[0.25em] uppercase py-3.5 bg-primary text-primary-foreground hover:opacity-90 transition-all font-medium mono-shine disabled:opacity-70 flex items-center justify-center"
-                >
-                  {isSyncing ? "Processando..." : "Finalizar Compra"}
-                </button>
-                <button
-                  disabled={isSyncing}
-                  onClick={closeCart}
-                  className="w-full font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors py-2 disabled:opacity-50"
-                >
-                  Continuar Comprando
-                </button>
+                <div className="space-y-2">
+                    <button
+                        disabled={isSyncing}
+                        onClick={handleCheckout}
+                        className="w-full font-body text-[10px] tracking-[0.25em] uppercase py-3.5 bg-primary text-primary-foreground hover:opacity-90 transition-all font-medium mono-shine disabled:opacity-70 flex items-center justify-center"
+                    >
+                        {isSyncing ? "Processando..." : "Finalizar Compra"}
+                    </button>
+                    <button
+                        disabled={isSyncing}
+                        onClick={closeCart}
+                        className="w-full font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors py-2 disabled:opacity-50"
+                    >
+                        Continuar Comprando
+                    </button>
+                </div>
               </div>
             )}
           </motion.aside>

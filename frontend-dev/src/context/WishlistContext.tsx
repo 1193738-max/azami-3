@@ -21,8 +21,23 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<Product[]>([]);
+  const [items, setItems] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem("azami_wishlist");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Error loading wishlist from localStorage:", e);
+      return [];
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Persistence
+  import("react").then(({ useEffect }) => {
+    useEffect(() => {
+      localStorage.setItem("azami_wishlist", JSON.stringify(items));
+    }, [items]);
+  });
 
   const openWishlist = useCallback(() => setIsOpen(true), []);
   const closeWishlist = useCallback(() => setIsOpen(false), []);

@@ -23,8 +23,23 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("azami_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Error loading cart from localStorage:", e);
+      return [];
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Persistence
+  import("react").then(({ useEffect }) => {
+    useEffect(() => {
+      localStorage.setItem("azami_cart", JSON.stringify(items));
+    }, [items]);
+  });
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);

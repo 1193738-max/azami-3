@@ -5,18 +5,29 @@ export const useShopifyProducts = () => {
   return useQuery({
     queryKey: ["shopify-products"],
     queryFn: async (): Promise<Product[]> => {
-      try {
-        const res = await fetch("/products.json?limit=250");
-        if (!res.ok) {
-          throw new Error("Failed fetching from Shopify");
-        }
-        const data = await res.json();
-        
-        if (data && Array.isArray(data.products) && data.products.length > 0) {
+      const endpoints = [
+        `/products.json?limit=250&v=${new Date().getTime()}`,
+        `/collections/all/products.json?limit=250&v=${new Date().getTime()}`
+      ];
+
+      let lastError = null;
+
+      for (const url of endpoints) {
+        try {
+          console.log(`Fetching products from: ${url}`);
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          
+          const data = await res.json();
+          if (!data || !Array.isArray(data.products) || data.products.length === 0) {
+            console.warn(`Endpoint ${url} returned no products.`);
+            continue;
+          }
+
           const inventorySource = (window as any).ShopifyInventory || {};
           const collectionsSource = (window as any).ShopifyCollections || {};
 
-          console.log("Found Shopify products:", data.products.length);
+          console.log(`Successfully fetched ${data.products.length} products from ${url}`);
 
           return data.products.map((p: any) => {
             const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
@@ -51,7 +62,9 @@ export const useShopifyProducts = () => {
 
             const productInventory = inventorySource[p.handle] || {};
 
-            // Better Image Handling: Use featured image (p.image) or fallback to images[0]
+            // FEATURED IMAGE LOGIC: 
+            // 1. Check p.image.src (Shopify usually puts the featured image here)
+            // 2. Fallback to the first image in p.images
             const featuredImage = p.image?.src || (p.images && p.images[0]?.src) || "";
             const secondaryImage = (p.images && p.images[1]?.src) || featuredImage;
 
@@ -84,14 +97,15 @@ export const useShopifyProducts = () => {
               }
             };
           });
+        } catch (e) {
+          lastError = e;
+          console.error(`Error fetching from ${url}:`, e);
         }
-        
-        throw new Error("No products found");
-      } catch (e) {
-        console.warn("Using fallback local products.", e);
-        return fallbackProducts;
       }
+      
+      console.warn("Using fallback local products due to errors or empty response.", lastError);
+      return fallbackProducts;
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 1 * 60 * 1000, // Reduced to 1 minute for better sync during testing
   });
 };

@@ -29,16 +29,18 @@ const Header = () => {
       return shopifyMenu.map(link => {
           let href = link.url;
           // Contextual mapping: convert shopify-style /collections/all to /produtos
-          if (href === '/collections/all') href = '/produtos';
+          if (href === '/collections/all' || href === '/collections') href = '/produtos';
           // Convert /collections/handlename to /produtos?cat=handlename
           else if (href.startsWith('/collections/')) {
               const handle = href.replace('/collections/', '');
               href = `/produtos?cat=${handle}`;
           }
-          // Convert Shopify pages to internal routes
-          else if (href === '/pages/contact') href = '/contato';
-          else if (href === '/pages/about-us') href = '/sobre-nos';
-          else if (href === '/pages/sobre-nos') href = '/sobre-nos';
+          // Convert standard Shopify pages to internal routes
+          else if (href === '/pages/contact' || href === '/pages/contato') href = '/contato';
+          else if (href === '/pages/about-us' || href === '/pages/sobre-nos') href = '/sobre-nos';
+          else if (href === '/pages/guia-de-medidas' || href === '/pages/guia-medidas') href = '/guia-de-medidas';
+          else if (href === '/pages/rastreio' || href === '/pages/rastreio-e-frete') href = '/rastreio';
+          else if (href === '/pages/devolucoes') href = '/devolucoes';
           
           return { label: link.title, href: href };
       });

@@ -2,11 +2,14 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { useWishlist } from "@/context/WishlistContext";
 import { formatPrice } from "@/data/products";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const NightCollection = () => {
   const { data: allProducts = [], isLoading } = useShopifyProducts();
+  const { toggleItem, isWishlisted } = useWishlist();
   
   const nightProducts = useMemo(() => {
     return allProducts.filter(p => 
@@ -68,9 +71,19 @@ const NightCollection = () => {
                   <img src={nightProducts[0].image} alt={nightProducts[0].name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </Link>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute top-4 right-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                <button className="w-9 h-9 bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10" aria-label="Favoritar"><Heart size={14} /></button>
+              <div className="absolute inset-x-0 inset-y-0 pointer-events-none bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute top-4 right-4 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-30">
+                <button 
+                  onClick={() => {
+                    const isFav = isWishlisted(nightProducts[0].id);
+                    toggleItem(nightProducts[0]);
+                    toast(isFav ? `${nightProducts[0].name} removido` : `${nightProducts[0].name} nos favoritos 💛`);
+                  }}
+                  className={`w-9 h-9 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${isWishlisted(nightProducts[0].id) ? 'bg-primary border-primary text-primary-foreground' : 'bg-black/40 text-white'}`} 
+                  aria-label="Favoritar"
+                >
+                  <Heart size={14} fill={isWishlisted(nightProducts[0].id) ? "currentColor" : "none"} />
+                </button>
               </div>
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-8 z-20">
                 <Link to={`/produto/${nightProducts[0].id}`}>
@@ -99,7 +112,20 @@ const NightCollection = () => {
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </Link>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute top-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
+                  <button 
+                    onClick={() => {
+                      const isFav = isWishlisted(product.id);
+                      toggleItem(product);
+                      toast(isFav ? `${product.name} removido` : `${product.name} nos favoritos 💛`);
+                    }}
+                    className={`w-8 h-8 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${isWishlisted(product.id) ? 'bg-primary border-primary text-primary-foreground' : 'bg-black/40 text-white'}`} 
+                    aria-label="Favoritar"
+                  >
+                    <Heart size={12} fill={isWishlisted(product.id) ? "currentColor" : "none"} />
+                  </button>
+                </div>
                 <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 z-10">
                   <Link to={`/produto/${product.id}`}>
                     <h3 className="font-body text-xs md:text-sm text-white font-light mb-0.5">{product.name}</h3>

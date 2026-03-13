@@ -2,11 +2,14 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { useWishlist } from "@/context/WishlistContext";
 import { formatPrice } from "@/data/products";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const BestSellers = () => {
   const { data: allProducts = [], isLoading } = useShopifyProducts();
+  const { toggleItem, isWishlisted } = useWishlist();
   
   const bestSellers = useMemo(() => {
     return allProducts.filter(p => 
@@ -75,9 +78,17 @@ const BestSellers = () => {
                   <div className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm px-2.5 py-0.5">
                     <span className="font-display text-sm text-primary">#{i + 1}</span>
                   </div>
-                  <div className="absolute top-3 right-3 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-300">
-                    <button className="w-8 h-8 bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Favoritar">
-                      <Heart size={13} />
+                  <div className="absolute top-3 right-3 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-300 z-20">
+                    <button 
+                      onClick={() => {
+                        const isFav = isWishlisted(product.id);
+                        toggleItem(product);
+                        toast(isFav ? `${product.name} removido` : `${product.name} nos favoritos 💛`);
+                      }}
+                      className={`w-8 h-8 backdrop-blur-sm flex items-center justify-center transition-all ${isWishlisted(product.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background/90 text-foreground hover:bg-primary hover:text-primary-foreground'}`} 
+                      aria-label="Favoritar"
+                    >
+                      <Heart size={13} fill={isWishlisted(product.id) ? "currentColor" : "none"} />
                     </button>
                   </div>
                   

@@ -72,30 +72,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
             isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           }`}
         >
-          {/* Size selector */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            {product.sizes.map((size) => (
-              <button
-                key={size}
-                onClick={() => setSelectedSize(size)}
-                className={`font-body text-[10px] tracking-wider w-8 h-8 border transition-colors ${
-                  selectedSize === size
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-foreground hover:border-primary"
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => addItem(product, selectedSize)}
+          <Link
+            to={`/produto/${product.id}`}
             className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-body text-[10px] tracking-[0.2em] uppercase py-2.5 hover:bg-primary/90 transition-colors"
           >
-            <ShoppingBag size={13} />
-            Adicionar
-          </button>
+            Ver Produto
+          </Link>
         </div>
       </div>
 

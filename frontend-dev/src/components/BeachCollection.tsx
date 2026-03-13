@@ -2,11 +2,14 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { useWishlist } from "@/context/WishlistContext";
 import { formatPrice } from "@/data/products";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const BeachCollection = () => {
   const { data: allProducts = [], isLoading } = useShopifyProducts();
+  const { toggleItem, isWishlisted } = useWishlist();
   
   const beachProducts = useMemo(() => {
     return allProducts.filter(p => 
@@ -53,21 +56,31 @@ const BeachCollection = () => {
               initial={{ opacity: 0, y: 20 }} 
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }} 
-              className="min-w-[75vw] sm:min-w-[45vw] md:min-w-0 group cursor-pointer snap-center"
+              className="min-w-[75vw] sm:min-w-[45vw] md:min-w-0 group cursor-pointer snap-center relative"
             >
               <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-muted">
                 <Link to={`/produto/${product.id}`} className="block h-full w-full">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </Link>
-                <div className="absolute top-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <button className="w-8 h-8 bg-white/80 backdrop-blur-sm flex items-center justify-center border border-black/5" aria-label="Favoritar"><Heart size={13} /></button>
+                <div className="absolute top-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
+                  <button 
+                    onClick={() => {
+                      const isFav = isWishlisted(product.id);
+                      toggleItem(product);
+                      toast(isFav ? `${product.name} removido` : `${product.name} nos favoritos 💛`);
+                    }}
+                    className={`w-8 h-8 backdrop-blur-sm flex items-center justify-center border border-black/5 transition-colors ${isWishlisted(product.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/80 text-foreground'}`} 
+                    aria-label="Favoritar"
+                  >
+                    <Heart size={13} fill={isWishlisted(product.id) ? "currentColor" : "none"} />
+                  </button>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-4 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                    <Link to={`/produto/${product.id}`} className="w-full block text-center bg-primary text-primary-foreground font-body text-[10px] tracking-[0.1em] uppercase py-3 hover:bg-primary/90">
                      Detalhes
                    </Link>
                 </div>
-                <div className="absolute inset-0 border border-border/20 group-hover:border-primary/20 transition-colors" />
+                <div className="absolute inset-0 border border-border/20 group-hover:border-primary/20 transition-colors pointer-events-none" />
               </div>
               <Link to={`/produto/${product.id}`}>
                 <h3 className="font-body text-xs md:text-sm text-foreground font-light mb-0.5 truncate">{product.name}</h3>

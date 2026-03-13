@@ -35,6 +35,11 @@ const Header = () => {
               const handle = href.replace('/collections/', '');
               href = `/produtos?cat=${handle}`;
           }
+          // Convert Shopify pages to internal routes
+          else if (href === '/pages/contact') href = '/contato';
+          else if (href === '/pages/about-us') href = '/sobre-nos';
+          else if (href === '/pages/sobre-nos') href = '/sobre-nos';
+          
           return { label: link.title, href: href };
       });
     }

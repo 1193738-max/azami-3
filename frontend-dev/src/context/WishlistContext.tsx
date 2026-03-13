@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { Product } from "@/data/products";
 
 interface WishlistContextType {
@@ -33,11 +33,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Persistence
-  import("react").then(({ useEffect }) => {
-    useEffect(() => {
-      localStorage.setItem("azami_wishlist", JSON.stringify(items));
-    }, [items]);
-  });
+  useEffect(() => {
+    localStorage.setItem("azami_wishlist", JSON.stringify(items));
+  }, [items]);
 
   const openWishlist = useCallback(() => setIsOpen(true), []);
   const closeWishlist = useCallback(() => setIsOpen(false), []);

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { Product, ProductSize, CartItem } from "@/data/products";
 import { toast } from "sonner";
 
@@ -35,11 +35,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Persistence
-  import("react").then(({ useEffect }) => {
-    useEffect(() => {
-      localStorage.setItem("azami_cart", JSON.stringify(items));
-    }, [items]);
-  });
+  useEffect(() => {
+    localStorage.setItem("azami_cart", JSON.stringify(items));
+  }, [items]);
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);

@@ -268,34 +268,38 @@ const ProductDetails = () => {
               )}
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <div className="flex items-center border border-border h-14 w-full sm:w-32">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Minus size={14} /></button>
-                  <span className="flex-1 text-center font-body text-sm font-medium">{quantity}</span>
-                  <button onClick={() => {
-                     if (stockCount !== undefined && stockCount !== null && quantity >= stockCount) {
-                         toast.warning(`Limite de estoque atingido (${stockCount} un.)`);
-                         return;
-                     }
-                     setQuantity(quantity + 1);
-                  }} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Plus size={14} /></button>
-                </div>
+              <div className="flex flex-col gap-4 mb-12">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex gap-3 w-full sm:w-auto">
+                    {/* Quantity Selector - Thinner on mobile */}
+                    <div className="flex items-center border border-border h-14 w-24 sm:w-32 shrink-0">
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 sm:w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Minus size={14} /></button>
+                      <span className="flex-1 text-center font-body text-sm font-medium">{quantity}</span>
+                      <button onClick={() => {
+                         if (stockCount !== undefined && stockCount !== null && quantity >= stockCount) {
+                             toast.warning(`Limite de estoque atingido (${stockCount} un.)`);
+                             return;
+                         }
+                         setQuantity(quantity + 1);
+                      }} className="w-8 sm:w-10 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"><Plus size={14} /></button>
+                    </div>
 
-                <div className="flex flex-col sm:flex-row flex-1 gap-3">
-                  <button 
-                    disabled={!isAvailable}
-                    onClick={handleAddToCart}
-                    className={`flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-transparent text-foreground border border-foreground hover:bg-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    <ShoppingBag size={14} />
-                    {isAvailable ? 'Na Sacola' : 'Esgotado'}
-                  </button>
+                    <button 
+                      disabled={!isAvailable}
+                      onClick={handleAddToCart}
+                      className={`flex-1 sm:w-48 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-transparent text-foreground border border-foreground hover:bg-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <ShoppingBag size={14} />
+                      <span className="sm:inline">{isAvailable ? 'Na Sacola' : 'Esgotado'}</span>
+                    </button>
+                  </div>
+
                   <button 
                     disabled={!isAvailable}
                     onClick={() => {
                         handleAddToCart();
                     }}
-                    className={`flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center justify-center gap-2 mono-shine disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`w-full sm:flex-1 h-14 font-body text-[10px] tracking-[0.2em] uppercase bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center justify-center gap-2 mono-shine disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isAvailable ? 'Comprar Agora' : 'Indisponível'}
                   </button>

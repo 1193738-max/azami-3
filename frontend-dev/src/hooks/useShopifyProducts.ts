@@ -8,24 +8,42 @@ export const useShopifyProducts = () => {
       // 1. First Attempt: Use data injected directly by theme.liquid (Bulletproof)
       const injectedProducts = (window as any).ShopifyFullProducts;
       
-      const processProducts = (rawProducts: any[]) => {
+      const processProducts = (rawProducts: any[], source: 'liquid' | 'ajax' = 'ajax') => {
           const inventorySource = (window as any).ShopifyInventory || {};
           const collectionsSource = (window as any).ShopifyCollections || {};
           
           return rawProducts.map((p: any) => {
-            const price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
+            // Price: Shopify Liquid returns cents, Ajax returns decimal strings
+            let price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
+            if (source === 'liquid') price = price / 100;
             
-            const sizeIdx = (p.options || [])?.findIndex((o: any) => 
+            // Options: Liquid 'product | json' usually yields p.options as array of strings (names)
+            const optionsInfo = p.options || [];
+            const sizeIdx = optionsInfo.findIndex((o: any) => 
                ['tamanho', 'size', 'tam', 'medida', 'tamanho '].includes((typeof o === 'string' ? o : o.name)?.toLowerCase().trim())
             );
             
-            const colorIdx = (p.options || [])?.findIndex((o: any) => 
+            const colorIdx = optionsInfo.findIndex((o: any) => 
                ['cor', 'color', 'estampa', 'modelo', 'cores'].includes((typeof o === 'string' ? o : o.name)?.toLowerCase().trim())
             );
 
-            // Shopify Liquid 'product | json' might have a different structure for options than 'products.json'
-            const sizes = sizeIdx !== -1 ? (p.options[sizeIdx]?.values || (Array.isArray(p.options[sizeIdx]) ? p.options[sizeIdx] : [])) : [];
-            const colors = colorIdx !== -1 ? (p.options[colorIdx]?.values || (Array.isArray(p.options[colorIdx]) ? p.options[colorIdx] : [])) : [];
+            // Rebuild option values for selectors
+            const sSet = new Set<string>();
+            const cSet = new Set<string>();
+            p.variants?.forEach((v: any) => {
+              if (sizeIdx !== -1) {
+                const val = v[`option${sizeIdx + 1}`];
+                if (val) sSet.add(val);
+              }
+              if (colorIdx !== -1) {
+                const val = v[`option${colorIdx + 1}`];
+                if (val) cSet.add(val);
+              }
+            });
+
+            // If variants didn't yield values, fallback to p.options objects if they exist (Ajax style)
+            const sizes = sSet.size > 0 ? Array.from(sSet) : (sizeIdx !== -1 ? (p.options[sizeIdx]?.values || []) : []);
+            const colors = cSet.size > 0 ? Array.from(cSet) : (colorIdx !== -1 ? (p.options[colorIdx]?.values || []) : []);
             
             const tagsArray = Array.isArray(p.tags) ? p.tags : (p.tags ? p.tags.split(',').map((t: string) => t.trim()) : []);
 
@@ -44,8 +62,8 @@ export const useShopifyProducts = () => {
             const productInventory = inventorySource[p.handle] || {};
 
             // FEATURED IMAGE: Prioritize featured_image or p.image.src
-            const featuredImage = p.featured_image || p.image?.src || (p.images && p.images[0]?.src) || (p.images && p.images[0]) || "";
-            const secondaryImage = (p.images && p.images[1]?.src) || (p.images && p.images[1]) || featuredImage;
+            const featuredImage = p.featured_image?.src || p.featured_image || p.image?.src || (p.images && p.images[0]?.src) || (p.images && p.images[0]) || "";
+            const secondaryImage = (p.images && (p.images[1]?.src || p.images[1])) || featuredImage;
 
             return {
               id: p.handle || p.id.toString(),
@@ -54,8 +72,8 @@ export const useShopifyProducts = () => {
               description: p.body_html || p.description || "",
               details: tagsArray,
               category: categories as any,
-              sizes: sizes,
-              colors: colors,
+              sizes: sizes as any[],
+              colors: colors as any[],
               image: featuredImage,
               imageHover: secondaryImage,
               isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || lowerTags.some((t: string) => t.includes("best")),
@@ -65,7 +83,7 @@ export const useShopifyProducts = () => {
                 
                 return {
                     ...v,
-                    price: v.price?.toString(),
+                    price: source === 'liquid' ? (parseFloat(v.price) / 100).toString() : v.price?.toString(),
                     inventory_quantity: realQty,
                     available: v.available ?? (realQty > 0 || v.inventory_management === null)
                 };
@@ -80,7 +98,7 @@ export const useShopifyProducts = () => {
 
       if (Array.isArray(injectedProducts) && injectedProducts.length > 0) {
         console.log(`Using ${injectedProducts.length} products injected via Liquid.`);
-        return processProducts(injectedProducts);
+        return processProducts(injectedProducts, 'liquid');
       }
 
       // 2. Second Attempt: Network Fetch (if Liquid injection failed)
@@ -98,7 +116,7 @@ export const useShopifyProducts = () => {
           const data = await res.json();
           if (data && Array.isArray(data.products) && data.products.length > 0) {
             console.log(`Successfully fetched ${data.products.length} products from ${url}`);
-            return processProducts(data.products);
+            return processProducts(data.products, 'ajax');
           }
         } catch (e) {
           console.error(`Error fetching from ${url}:`, e);

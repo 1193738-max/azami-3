@@ -194,9 +194,10 @@ const ProductDetails = () => {
                 )}
               </div>
 
-              <div className="prose prose-sm font-body text-muted-foreground mb-10 leading-relaxed">
-                <p>{product.description}</p>
-              </div>
+              <div 
+                className="prose prose-sm font-body text-muted-foreground mb-10 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
 
               {/* Color Selection */}
               {product.colors.length > 0 && (

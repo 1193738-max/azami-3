@@ -8,10 +8,10 @@ import { useWishlist } from "@/context/WishlistContext";
 import SearchModal from "./SearchModal";
 
 const fallbackNavLinks = [
-  { label: "Todos", href: "/produtos" },
-  { label: "Night Out", href: "/produtos?cat=night-out" },
-  { label: "Beach Chic", href: "/produtos?cat=beach-chic" },
-  { label: "Best Sellers", href: "/produtos?cat=best-sellers" },
+  { label: "Início", href: "/" },
+  { label: "Catálogo", href: "/produtos" },
+  { label: "Contato", href: "/contato" },
+  { label: "Sobre Nós", href: "/sobre-nos" },
 ];
 
 const Header = () => {

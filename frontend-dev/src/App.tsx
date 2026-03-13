@@ -15,6 +15,7 @@ import Rastreio from "./pages/Rastreio";
 import Devolucoes from "./pages/Devolucoes";
 import GuiaMedidas from "./pages/GuiaMedidas";
 import Contato from "./pages/Contato";
+import SobreNos from "./pages/SobreNos";
 import NotFound from "./pages/NotFound";
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/devolucoes" element={<Devolucoes />} />
               <Route path="/guia-de-medidas" element={<GuiaMedidas />} />
               <Route path="/contato" element={<Contato />} />
+              <Route path="/sobre-nos" element={<SobreNos />} />
               {/* Em modo Editor da Shopify, se cair em rota desconhecida, tentamos mostrar a Index para evitar tela de 404 durante edição */}
               <Route path="*" element={((window as any).Shopify?.designMode || (window as any).ShopifyThemeSettings?.designMode) ? <Index /> : <NotFound />} />
             </Routes>

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import model01 from "@/assets/model-01.jpg";
 
 const ShapeSection = () => {
@@ -48,11 +49,13 @@ const ShapeSection = () => {
               </svg>
             </motion.div>
 
-            <motion.a initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.6 }}
-              href="#"
-              className="inline-block font-body text-[10px] tracking-[0.2em] uppercase bg-white text-black px-7 py-3.5 hover:bg-white/90 transition-all duration-300 mono-shine">
-              Explorar Peças Shape
-            </motion.a>
+            <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.6 }}>
+              <Link
+                to="/produtos"
+                className="inline-block font-body text-[10px] tracking-[0.2em] uppercase bg-white text-black px-7 py-3.5 hover:bg-white/90 transition-all duration-300 mono-shine">
+                Explorar Peças Shape
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>

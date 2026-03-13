@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import model04 from "@/assets/model-04.jpg";
 
 const BrandStory = () => {
@@ -41,9 +42,12 @@ const BrandStory = () => {
                 <path d="M0 8 C7 2, 13 14, 20 8 C27 2, 33 14, 40 8 C47 2, 53 14, 60 8 C67 2, 73 14, 80 8" stroke="currentColor" strokeWidth="1" fill="none" />
               </svg>
             </div>
-            <a href="#" className="font-body text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 hover:border-foreground hover:text-foreground pb-1 transition-colors duration-300">
+            <Link 
+              to="/sobre-nos" 
+              className="font-body text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 hover:border-foreground hover:text-foreground pb-1 transition-colors duration-300"
+            >
               Conheça nossa história
-            </a>
+            </Link>
           </motion.div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import model01 from "@/assets/model-01.jpg";
 
 const HeroSection = () => {
@@ -60,18 +61,18 @@ const HeroSection = () => {
                 transition={{ duration: 0.6, delay: 1.0 }}
                 className="flex flex-col sm:flex-row items-start gap-5 sm:gap-6"
               >
-                <a
-                  href="/produtos"
+                <Link
+                  to="/produtos"
                   className="font-body text-[10px] tracking-[0.3em] uppercase bg-white text-black px-9 py-4 text-center hover:bg-white/90 transition-all duration-400 mono-shine"
                 >
-                  Conferir Colecção
-                </a>
-                <a
-                  href="#bestsellers"
+                  Conferir Coleção
+                </Link>
+                <Link
+                  to="/produtos?cat=bestseller"
                   className="font-display text-sm md:text-base italic text-white/80 hover:text-white border-b border-white/30 hover:border-white pb-0.5 transition-all duration-400"
                 >
                   Mais Vendidos
-                </a>
+                </Link>
               </motion.div>
             </div>
           </div>

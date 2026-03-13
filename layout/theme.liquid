@@ -129,6 +129,14 @@
           }{% unless forloop.last %},{% endunless %}
         {% endfor %}
       };
+
+      window.ShopifyFullProducts = [
+        {% paginate collections.all.products by 1000 %}
+          {% for product in collections.all.products %}
+            {{ product | json }}{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        {% endpaginate %}
+      ];
     </script>
   </head>
   <body>

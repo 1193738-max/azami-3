@@ -17,12 +17,15 @@ import GuiaMedidas from "./pages/GuiaMedidas";
 import Contato from "./pages/Contato";
 import NotFound from "./pages/NotFound";
 
+import ScrollToTop from "./components/ScrollToTop";
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <HashRouter>
+        <ScrollToTop />
         <WishlistProvider>
           <CartProvider>
             <Toaster />

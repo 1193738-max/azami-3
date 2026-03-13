@@ -28,11 +28,8 @@ const Footer = () => {
               <a href="https://www.instagram.com/azamimodas/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded bg-[hsl(0_0%_8%)] border border-[hsl(0_0%_15%)] flex items-center justify-center hover:border-primary hover:text-primary transition-colors" aria-label="Instagram">
                 <Instagram size={15} />
               </a>
-              <a href="#" className="w-9 h-9 rounded bg-[hsl(0_0%_8%)] border border-[hsl(0_0%_15%)] flex items-center justify-center hover:border-primary hover:text-primary transition-colors" aria-label="Facebook">
-                <Facebook size={15} />
-              </a>
-              <a href="#" className="w-9 h-9 rounded bg-[hsl(0_0%_8%)] border border-[hsl(0_0%_15%)] flex items-center justify-center hover:border-primary hover:text-primary transition-colors" aria-label="Twitter">
-                <Twitter size={15} />
+              <a href="https://api.whatsapp.com/send?phone=5511918439062" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded bg-[hsl(0_0%_8%)] border border-[hsl(0_0%_15%)] flex items-center justify-center hover:border-primary hover:text-primary transition-colors" aria-label="WhatsApp">
+                <Phone size={15} />
               </a>
             </div>
           </div>

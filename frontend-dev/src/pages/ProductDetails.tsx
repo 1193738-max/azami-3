@@ -318,7 +318,7 @@ const ProductDetails = () => {
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground sm:col-span-2">
                   <CreditCard size={18} className="text-primary" />
-                  <span className="font-body text-xs">Pagamento Seguro & Checkout Nativo Shopify</span>
+                  <span className="font-body text-xs">Pagamento Seguro</span>
                 </div>
               </div>
 

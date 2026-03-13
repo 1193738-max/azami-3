@@ -76,6 +76,7 @@ export const useShopifyProducts = () => {
               colors: colors as any[],
               image: featuredImage,
               imageHover: secondaryImage,
+              images: Array.isArray(p.images) ? p.images.map((img: any) => img.src || img) : [featuredImage],
               isBestSeller: categories.includes("bestseller") || categories.includes("best-sellers") || lowerTags.some((t: string) => t.includes("best")),
               variants: (p.variants || []).map((v: any) => {
                 const stockInGlobal = productInventory[v.id.toString()];

@@ -31,6 +31,7 @@ export interface Product {
   colors: string[];
   image: string;
   imageHover: string;
+  images: string[];
   isBestSeller?: boolean;
   variants?: Array<{
     id: number;
@@ -61,6 +62,7 @@ export const fallbackProducts: Product[] = [
     colors: ["Preto"],
     image: model01,
     imageHover: model02,
+    images: [model01, model02],
     isBestSeller: true,
   }
 ];

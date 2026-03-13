@@ -127,9 +127,9 @@ const ProductDetails = () => {
             <span className="text-foreground">{product.name}</span>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 lg:gap-20">
+          <div className="flex flex-col lg:flex-row gap-10 md:gap-16 lg:gap-20">
             {/* Image Gallery */}
-            <div className="space-y-4">
+            <div className="w-full lg:w-[45%] space-y-4">
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -154,8 +154,8 @@ const ProductDetails = () => {
                 )}
               </motion.div>
               
-              <div className="grid grid-cols-2 gap-4">
-                {[product.image, product.imageHover].map((img, i) => (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images?.map((img, i) => (
                   <button 
                     key={i}
                     onClick={() => setActiveImage(img)}
@@ -194,10 +194,6 @@ const ProductDetails = () => {
                 )}
               </div>
 
-              <div 
-                className="prose prose-sm font-body text-muted-foreground mb-10 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
 
               {/* Color Selection */}
               {product.colors.length > 0 && (
@@ -323,7 +319,13 @@ const ProductDetails = () => {
               </div>
 
               {/* Accordions / Details */}
-              <div className="mt-10">
+              <div className="mt-10 pt-10 border-t border-border">
+                <h3 className="font-body text-[10px] tracking-wider uppercase text-foreground mb-4">Sobre este produto</h3>
+                <div 
+                  className="prose prose-sm font-body text-muted-foreground mb-8 leading-relaxed max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+                
                 <h3 className="font-body text-[10px] tracking-wider uppercase text-foreground mb-4">Detalhes do Produto</h3>
                 <ul className="space-y-2">
                   {product.details.map((detail, idx) => (
